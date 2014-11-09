@@ -130,7 +130,7 @@ void OptionsDialog::setMapper()
     mapper->addMapping(ui->reserveBalance, OptionsModel::ReserveBalance);
     mapper->addMapping(ui->bitcoinAtStartup, OptionsModel::StartAtStartup);
     mapper->addMapping(ui->detachDatabases, OptionsModel::DetachDatabases);
-  //  mapper->addMapping(ui->advertisedBalance, OptionsModel::AdvertisedBalance);
+    mapper->addMapping(ui->advertisedBalance, OptionsModel::AdvertisedBalance);
 
     /* Network */
     mapper->addMapping(ui->mapPortUpnp, OptionsModel::MapPortUPnP);

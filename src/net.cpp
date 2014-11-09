@@ -480,7 +480,7 @@ CNode* FindNode(const CService& addr, bool verified) //TODO find out abt verifie
         LOCK(cs_vNodes);
         BOOST_FOREACH(CNode* pnode, vNodes)
             if ((CService)pnode->addr == addr) {
-                if (pnode->fTor && pnode->fInbound) {
+                if (pnode->fInbound) {
                    continue;
                 }
                 return (pnode);

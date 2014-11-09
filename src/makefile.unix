@@ -229,7 +229,7 @@ OBJS= \
     obj/scrypt-x86_64.o \
    
 
-all: millenniumCoind
+all: MillenniumCoind
 
 LIBS += $(CURDIR)/leveldb/libleveldb.a $(CURDIR)/leveldb/libmemenv.a
 DEFS += $(addprefix -I,$(CURDIR)/leveldb/include)

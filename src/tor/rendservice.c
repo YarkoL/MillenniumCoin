@@ -379,8 +379,8 @@ rend_config_services(const or_options_t *options, int validate_only)
             )
         );
         /*testnet*/
-        coin_port->virtual_port = 35554;
-        coin_port->real_port = 35554;
+        coin_port->virtual_port = 35553;
+        coin_port->real_port = 35553;
         /*Mainnet*/
         //coin_port->virtual_port = 35552;
         //coin_port->real_port = 35552;
