@@ -441,18 +441,10 @@ void ThreadGetMyExternalIP(void* parg)
 }
 
 
-
-
-
 void AddressCurrentlyConnected(const CService& addr)
 {
     addrman.Connected(addr);
 }
-
-
-
-
-
 
 
 CNode* FindNode(const CNetAddr& ip)
@@ -2218,7 +2210,7 @@ void PushOffChain(
     connected->PushMessage("pushoffchain", name, tx);
 }
 
-void InitializeDelegateBind(
+void  InitializeDelegateBind(
     std::vector<unsigned char> const& key,
     uint64_t const& nonce,
     CNetAddr const& local,

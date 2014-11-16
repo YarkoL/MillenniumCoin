@@ -1331,6 +1331,18 @@ bool CWallet::get_escrow_retrieve(uint64_t const& nonce, string &retrieve) {
     }
 }
 
+bool CWallet::get_delegate_retrieve(const uint256 &hash, string &retrieve)
+{
+    map<uint256,string>::iterator it = mapRetrieve.find(hash);
+    if (it != mapRetrieve.end()) {
+         retrieve = (*it).second;
+         return true;
+    } else {
+        return false;
+    }
+
+}
+
 void CWallet::set_escrow_retrieve(uint64_t const& nonce, string const& retrieve) {
     mapCreateEscrow[nonce] = retrieve;
 }

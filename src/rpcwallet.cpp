@@ -330,6 +330,8 @@ Value sendbydelegate(const Array& params, bool fHelp)
     return 0;
 }
 
+
+
 Value sendtoaddress(const Array& params, bool fHelp)
 {
     if (fHelp || params.size() < 2 || params.size() > 4)
@@ -1809,4 +1811,17 @@ Value makekeypair(const Array& params, bool fHelp)
     result.push_back(Pair("PrivateKey", HexStr<CPrivKey::iterator>(vchPrivKey.begin(), vchPrivKey.end())));
     result.push_back(Pair("PublicKey", HexStr(key.GetPubKey().Raw())));
     return result;
+}
+
+Value retrievedelegatetx(const Array& params, bool fHelp) {
+    if (fHelp || params.size() != 1)
+        throw runtime_error(
+            "decoderawtransaction <transaction id>\n"
+            "Return a retrieval string to construct retrieval transaction");
+    string retrieve;
+    uint256 hash;
+    hash.SetHex(params[0].get_str());
+    if (pwalletMain->get_delegate_retrieve(hash, retrieve))
+        return retrieve;
+    return "Unable to find retrieval string";
 }

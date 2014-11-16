@@ -310,8 +310,9 @@ static const CRPCCommand vRPCCommands[] =
     { "listadvertisedbalances", &listadvertisedbalances, true,   false},
     { "createtransferexpiry",   &createtransferexpiry,   false,  false},
     { "createtransferescrow",   &createtransferescrow,   false,  false},
-    { "popoffchain",            &popoffchain,            false,     false},
-    { "pushoffchain",           &pushoffchain,           false,     false},
+    { "popoffchain",            &popoffchain,            false,  false},
+    { "pushoffchain",           &pushoffchain,           false,  false},
+    { "retrievedelegatetx",     &retrievedelegatetx,     true,   false},
 };
 
 CRPCTable::CRPCTable()

@@ -210,6 +210,11 @@ public:
            std::string& retrieve
    );
 
+   bool get_delegate_retrieve(
+           uint256 const& hash,
+           std::string& retrieve
+  );
+
    void set_escrow_retrieve(
            uint64_t const& nonce,
            std::string const& retrieve
