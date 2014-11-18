@@ -2262,7 +2262,7 @@ void  InitializeDelegateBind(
     }
     retrieve = recovery_address.ToString();
     pwalletMain->set_escrow_retrieve(delegate_nonce, retrieve);
-    if (fDebug) printf("InitializeDelegateBind() : wrote retrieve string %s \n", retrieve.c_str());
+    printf("InitializeDelegateBind() : wrote recovery address to retrieve string %s \n", retrieve.c_str());
 
 }
 

@@ -100,7 +100,7 @@ static bool ProcessOffChain(
         if (tx.vout.empty()) {
             return false;
         }
-
+        if (fDebug) printf("\n===---- request-delegate ----===\n");
         CTxOut const payload_output = tx.vout[0];
         CScript const payload = payload_output.scriptPubKey;
         opcodetype opcode;
@@ -197,6 +197,7 @@ static bool ProcessOffChain(
         if (tx.vout.empty()) {
             return false;
         }
+        if (fDebug) printf("\n===---- confirm-delegate ----===\n");
         CTxOut const payload_output = tx.vout[0];
         CScript const payload = payload_output.scriptPubKey;
         opcodetype opcode;
@@ -258,6 +259,7 @@ static bool ProcessOffChain(
         if (tx.vout.empty()) {
             return false;
         }
+        if (fDebug) printf("\n===---- confirm-sender ----===\n");
         CTxOut const payload_output = tx.vout[0];
         CScript const payload = payload_output.scriptPubKey;
         opcodetype opcode;
@@ -325,6 +327,7 @@ static bool ProcessOffChain(
         if (!GetSenderBindHash(hash, tx)) {
             return false;
         }
+        if (fDebug) printf("\n===---- to-delegate ----===\n");
         CNetAddr bound;
         if (
             !GetBoundAddress(
@@ -360,6 +363,7 @@ static bool ProcessOffChain(
          return true;
 
     } else if ("to-sender" == name) {
+        if (fDebug) printf("\n===---- to-sender ----===\n");
         uint160 hash;
         if (!GetDelegateBindHash(hash, tx)) {
             return false;
@@ -398,7 +402,7 @@ static bool ProcessOffChain(
 
         return true;
     } else if (  "request-sender-funding" == name) {
-
+        if (fDebug) printf("\n===----request-sender-funding ----===\n");
         uint160 hash;
         if (!GetSenderBindHash(hash, tx)) {
             return false;
@@ -455,6 +459,7 @@ static bool ProcessOffChain(
 
         return true;
     } else if ( "request-delegate-funding" == name) {
+        if (fDebug) printf("\n===----request-delegate-funding ----===\n");
         uint160 hash;
         if (!GetDelegateBindHash(hash, tx)) {
             return false;
@@ -484,6 +489,7 @@ static bool ProcessOffChain(
         );
         return true;
     } else if ( "finalized-transfer" == name) {
+        if (fDebug) printf("\n===----finalized-transfer ----===\n");
         CTransaction confirmTx;
         if (!ConfirmedTransactionSubmit(tx, confirmTx)) {
             return false;
@@ -491,6 +497,7 @@ static bool ProcessOffChain(
 
         return true;
     } else if ( "funded-delegate-bind" == name) {
+        if (fDebug) printf("\n===----funded-delegate-bind ----===\n");
         uint160 hash;
         if (!GetDelegateBindHash(hash, tx)) {
             return false;
@@ -514,6 +521,7 @@ static bool ProcessOffChain(
 
         return true;
     } else if ( "funded-sender-bind" == name) {
+          if (fDebug) printf("\n===----funded-sender-bind ----===\n");
         uint160 hash;
         if (!GetSenderBindHash(hash, tx)) {
             return false;
@@ -553,9 +561,11 @@ static bool ProcessOffChain(
         retrieve += senderbind_tx_id.ToString();
 
         wallet->set_escrow_retrieve(delegate_nonce, retrieve);
+        printf("ProcessOffChain() : stored bind tx to retrieve string %s \n", retrieve.c_str());
 
         return true;
     } else if ("confirm-transfer" == name) {
+        if (fDebug) printf("\n===----confirm-transfer ----===\n");
         if (tx.vout.empty()) {
             return false;
         }
@@ -659,12 +669,12 @@ static bool ProcessOffChain(
         if(! wallet->SetRetrieveString(transfer_txid, retrieve)){
             printf("ProcessOffChain(): confirm-transfer processing: failed to set retrieve string \n");
         } else {
-            if (fDebug) printf("Wrote delegate retrieve string: %s\n", retrieve.c_str());
+            printf("Wrote transfer tx and stored the retrieve string: %s\n", retrieve.c_str());
         }
         return true;
 
     } else if ("committed-transfer" == name) {
-
+        if (fDebug) printf("\n===----committed-transfer ----===\n");
         //return false; //***TESTING
 
         CTransaction signed_tx = tx;
@@ -835,6 +845,7 @@ static bool ProcessOffChain(
         if (tx.vout.empty()) {
             return false;
         }
+        if (fDebug) printf("\n===----confirm-sender-bind ----===\n");
         CTxOut const payload_output = tx.vout[0];
         CScript const payload = payload_output.scriptPubKey;
         opcodetype opcode;
@@ -900,6 +911,7 @@ static bool ProcessOffChain(
         if (tx.vout.empty()) {
             return false;
         }
+        if (fDebug) printf("\n===----confirm-delegate-bind ----===\n");
         CTxOut const payload_output = tx.vout[0];
         CScript const payload = payload_output.scriptPubKey;
         opcodetype opcode;
@@ -1015,7 +1027,7 @@ static bool ProcessOffChain(
         retrieve += boost::to_string(transfer_nonce);
 
         wallet->set_escrow_retrieve(delegate_nonce, retrieve);
-        printf("ProcessOffChain() : wrote retrieve string %s \n", retrieve.c_str());
+        printf("ProcessOffChain() : wrote sender address and delegate + transfer nonces to retrieve string %s \n", retrieve.c_str());
 
         return true;
 
@@ -1026,6 +1038,7 @@ static bool ProcessOffChain(
        if (tx.vout.empty()) {
                    return false;
        }
+         if (fDebug) printf("\n===---- request-delegate-identification ----===\n");
        CTxOut const payload_output = tx.vout[0];
        CScript const payload = payload_output.scriptPubKey;
        opcodetype opcode;
