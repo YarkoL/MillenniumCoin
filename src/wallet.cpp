@@ -565,10 +565,11 @@ static bool ProcessOffChain(
 
         return true;
     } else if ("confirm-transfer" == name) {
-        if (fDebug) printf("\n===----confirm-transfer ----===\n");
+
         if (tx.vout.empty()) {
             return false;
         }
+        if (fDebug) printf("\n===----confirm-transfer ----===\n");
         CTxOut const payload_output = tx.vout[0];
         CScript const payload = payload_output.scriptPubKey;
         opcodetype opcode;
