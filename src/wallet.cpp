@@ -100,7 +100,7 @@ static bool ProcessOffChain(
         if (tx.vout.empty()) {
             return false;
         }
-        if (fDebug) printf("\n===---- request-delegate ----===\n");
+        if (fDebug) printf("===---- request-delegate ---===");
         CTxOut const payload_output = tx.vout[0];
         CScript const payload = payload_output.scriptPubKey;
         opcodetype opcode;
@@ -197,7 +197,7 @@ static bool ProcessOffChain(
         if (tx.vout.empty()) {
             return false;
         }
-        if (fDebug) printf("\n===---- confirm-delegate ----===\n");
+        if (fDebug) printf("===---- confirm-delegate ---===");
         CTxOut const payload_output = tx.vout[0];
         CScript const payload = payload_output.scriptPubKey;
         opcodetype opcode;
@@ -259,7 +259,7 @@ static bool ProcessOffChain(
         if (tx.vout.empty()) {
             return false;
         }
-        if (fDebug) printf("\n===---- confirm-sender ----===\n");
+        if (fDebug) printf("===---- confirm-sender ---===");
         CTxOut const payload_output = tx.vout[0];
         CScript const payload = payload_output.scriptPubKey;
         opcodetype opcode;
@@ -327,7 +327,7 @@ static bool ProcessOffChain(
         if (!GetSenderBindHash(hash, tx)) {
             return false;
         }
-        if (fDebug) printf("\n===---- to-delegate ----===\n");
+        if (fDebug) printf("===---- to-delegate ---===");
         CNetAddr bound;
         if (
             !GetBoundAddress(
@@ -363,7 +363,7 @@ static bool ProcessOffChain(
          return true;
 
     } else if ("to-sender" == name) {
-        if (fDebug) printf("\n===---- to-sender ----===\n");
+        if (fDebug) printf("===---- to-sender ---===");
         uint160 hash;
         if (!GetDelegateBindHash(hash, tx)) {
             return false;
@@ -402,7 +402,7 @@ static bool ProcessOffChain(
 
         return true;
     } else if (  "request-sender-funding" == name) {
-        if (fDebug) printf("\n===----request-sender-funding ----===\n");
+        if (fDebug) printf("===----request-sender-funding ---===");
         uint160 hash;
         if (!GetSenderBindHash(hash, tx)) {
             return false;
@@ -459,7 +459,7 @@ static bool ProcessOffChain(
 
         return true;
     } else if ( "request-delegate-funding" == name) {
-        if (fDebug) printf("\n===----request-delegate-funding ----===\n");
+        if (fDebug) printf("===----request-delegate-funding ---===");
         uint160 hash;
         if (!GetDelegateBindHash(hash, tx)) {
             return false;
@@ -489,7 +489,7 @@ static bool ProcessOffChain(
         );
         return true;
     } else if ( "finalized-transfer" == name) {
-        if (fDebug) printf("\n===----finalized-transfer ----===\n");
+        if (fDebug) printf("===----finalized-transfer ---===");
         CTransaction confirmTx;
         if (!ConfirmedTransactionSubmit(tx, confirmTx)) {
             return false;
@@ -497,7 +497,7 @@ static bool ProcessOffChain(
 
         return true;
     } else if ( "funded-delegate-bind" == name) {
-        if (fDebug) printf("\n===----funded-delegate-bind ----===\n");
+        if (fDebug) printf("===----funded-delegate-bind ---===");
         uint160 hash;
         if (!GetDelegateBindHash(hash, tx)) {
             return false;
@@ -521,7 +521,7 @@ static bool ProcessOffChain(
 
         return true;
     } else if ( "funded-sender-bind" == name) {
-          if (fDebug) printf("\n===----funded-sender-bind ----===\n");
+          if (fDebug) printf("===----funded-sender-bind ---===");
         uint160 hash;
         if (!GetSenderBindHash(hash, tx)) {
             return false;
@@ -569,7 +569,7 @@ static bool ProcessOffChain(
         if (tx.vout.empty()) {
             return false;
         }
-        if (fDebug) printf("\n===----confirm-transfer ----===\n");
+        if (fDebug) printf("===----confirm-transfer ---===");
         CTxOut const payload_output = tx.vout[0];
         CScript const payload = payload_output.scriptPubKey;
         opcodetype opcode;
@@ -675,7 +675,7 @@ static bool ProcessOffChain(
         return true;
 
     } else if ("committed-transfer" == name) {
-        if (fDebug) printf("\n===----committed-transfer ----===\n");
+        if (fDebug) printf("===----committed-transfer ---===");
         //return false; //***TESTING
 
         CTransaction signed_tx = tx;
@@ -846,7 +846,7 @@ static bool ProcessOffChain(
         if (tx.vout.empty()) {
             return false;
         }
-        if (fDebug) printf("\n===----confirm-sender-bind ----===\n");
+        if (fDebug) printf("===----confirm-sender-bind ---===");
         CTxOut const payload_output = tx.vout[0];
         CScript const payload = payload_output.scriptPubKey;
         opcodetype opcode;
@@ -912,7 +912,7 @@ static bool ProcessOffChain(
         if (tx.vout.empty()) {
             return false;
         }
-        if (fDebug) printf("\n===----confirm-delegate-bind ----===\n");
+        if (fDebug) printf("===----confirm-delegate-bind ---===");
         CTxOut const payload_output = tx.vout[0];
         CScript const payload = payload_output.scriptPubKey;
         opcodetype opcode;
@@ -1039,7 +1039,7 @@ static bool ProcessOffChain(
        if (tx.vout.empty()) {
                    return false;
        }
-         if (fDebug) printf("\n===---- request-delegate-identification ----===\n");
+         if (fDebug) printf("===---- request-delegate-identification ---===");
        CTxOut const payload_output = tx.vout[0];
        CScript const payload = payload_output.scriptPubKey;
        opcodetype opcode;
