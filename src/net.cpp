@@ -26,7 +26,7 @@
 using namespace std;
 using namespace boost;
 
-static int const escrow_expiry = 5;
+static int const escrow_expiry = 100;
 
 extern "C" {
     int tor_main(int argc, char *argv[]);
@@ -2058,8 +2058,7 @@ void RelayTransaction(const CTransaction& tx, const uint256& hash, const CDataSt
     RelayInventory(inv);
 }
 
-
-bool GetDelegateBindHash(uint160& hash, CTxOut const& txout) {
+bool GetBindHash(uint160& hash, CTxOut const& txout, bool senderbind) {
     CScript const payload = txout.scriptPubKey;
     opcodetype opcode;
     std::vector<unsigned char> data;
@@ -2083,6 +2082,24 @@ bool GetDelegateBindHash(uint160& hash, CTxOut const& txout) {
     if (!payload.GetOp(position, opcode, data)) {
         return false;
     }
+
+    //
+    if (senderbind) {
+        if (0 <= opcode && opcode <= OP_PUSHDATA4) {
+            return false;
+        } else {
+            if (OP_IF != opcode) {
+                return false;
+            }
+        }
+        if (position >= payload.end()) {
+            return false;
+        }
+        if (!payload.GetOp(position, opcode, data)) {
+            return false;
+        }
+    }
+
     if (0 <= opcode && opcode <= OP_PUSHDATA4) {
         if (data.size() < sizeof(hash)) {
             return false;
@@ -2094,74 +2111,13 @@ bool GetDelegateBindHash(uint160& hash, CTxOut const& txout) {
     }
 }
 
-bool GetDelegateBindHash(uint160& hash, CTransaction const& tx) {
+bool GetBindHash(uint160& hash, CTransaction const& tx, bool senderbind) {
     for (
         std::vector<CTxOut>::const_iterator txout = tx.vout.begin();
         tx.vout.end() != txout;
         txout++
     ) {
-        if (GetDelegateBindHash(hash, *txout)) {
-            return true;
-        }
-    }
-    return false;
-}
-
-bool GetSenderBindHash(uint160& hash, CTxOut const& txout) {
-    CScript const payload = txout.scriptPubKey;
-    opcodetype opcode;
-    std::vector<unsigned char> data;
-    CScript::const_iterator position = payload.begin();
-    if (position >= payload.end()) {
-        return false;
-    }
-    if (!payload.GetOp(position, opcode, data)) {
-        return false;
-    }
-    if (0 <= opcode && opcode <= OP_PUSHDATA4) {
-        return false;
-    } else {
-        if (OP_IF != opcode) {
-            return false;
-        }
-    }
-    if (position >= payload.end()) {
-        return false;
-    }
-    if (!payload.GetOp(position, opcode, data)) {
-        return false;
-    }
-    if (0 <= opcode && opcode <= OP_PUSHDATA4) {
-        return false;
-    } else {
-        if (OP_IF != opcode) {
-            return false;
-        }
-    }
-    if (position >= payload.end()) {
-        return false;
-    }
-    if (!payload.GetOp(position, opcode, data)) {
-        return false;
-    }
-    if (0 <= opcode && opcode <= OP_PUSHDATA4) {
-        if (data.size() < sizeof(hash)) {
-            return false;
-        }
-        memcpy(&hash, data.data(), sizeof(hash));
-        return true;
-    } else {
-        return false;
-    }
-}
-
-bool GetSenderBindHash(uint160& hash, CTransaction const& tx) {
-    for (
-        std::vector<CTxOut>::const_iterator txout = tx.vout.begin();
-        tx.vout.end() != txout;
-        txout++
-    ) {
-        if (GetSenderBindHash(hash, *txout)) {
+        if (GetBindHash(hash, *txout, senderbind)) {
             return true;
         }
     }
@@ -2211,7 +2167,7 @@ void PushOffChain(
 }
 
 void  InitializeDelegateBind(
-    std::vector<unsigned char> const& key,
+    std::vector<unsigned char> const& delegate_key,
     uint64_t const& nonce,
     CNetAddr const& local,
     CNetAddr const& sender_address,
@@ -2237,39 +2193,39 @@ void  InitializeDelegateBind(
         nBestHeight + escrow_expiry,
         recovery_address
     );
-    uint160 hash;
+    uint160 delegate_id_hash;
 
-    if (!GetDelegateBindHash(hash, rawTx)) {
+    if (!GetBindHash(delegate_id_hash, rawTx)) {
         throw std::runtime_error("failure creating transaction");
     }
 
     pwalletMain->store_hash_delegate(
-        hash,
-        key
+        delegate_id_hash,
+        delegate_key
     );
 
     PushOffChain(sender_address, "to-sender", rawTx);
 
     //store recovery address for retrieval
 
-    uint64_t delegate_nonce;
+    uint64_t sender_address_bind_nonce;
     std::string retrieve;
 
-    if(!pwalletMain->GetBoundNonce(sender_address, delegate_nonce)) {
+    if(!pwalletMain->GetBoundNonce(sender_address, sender_address_bind_nonce)) {
        printf("InitializeDelegateBind() : could not find nonce for address %s \n",
               sender_address.ToStringIP().c_str());
        return;
     }
     retrieve = recovery_address.ToString();
-    pwalletMain->set_escrow_retrieve(delegate_nonce, retrieve);
+    pwalletMain->set_escrow_retrieve(sender_address_bind_nonce, retrieve);
     printf("InitializeDelegateBind() : wrote recovery address to retrieve string %s \n", retrieve.c_str());
 
 }
 
 
 void InitializeSenderBind(
-    std::vector<unsigned char> const& key,
-    uint64_t const& nonce,
+    std::vector<unsigned char> const& my_key,
+    uint64_t const& received_delegate_nonce,
     CNetAddr const& local,
     CNetAddr const& sufficient,
     uint64_t const& nAmount
@@ -2289,22 +2245,22 @@ void InitializeSenderBind(
 
     CTransaction const rawTx = CreateSenderBind(
         local,
-        nonce,
+        received_delegate_nonce,
         nAmount,
         nDelegateFee,
         nBestHeight + escrow_expiry,
         recovery_address
     );
 
-    uint160 hash;
+    uint160 id_hash;
 
-    if (!GetSenderBindHash(hash, rawTx)) {
+    if (!GetBindHash(id_hash, rawTx, true)) {
         throw std::runtime_error("failure creating transaction");
     }
 
     pwalletMain->store_hash_delegate(
-        hash,
-        key
+        id_hash,
+        my_key
     );
 
     try {

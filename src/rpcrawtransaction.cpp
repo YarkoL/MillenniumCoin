@@ -696,27 +696,27 @@ Value createtransferescrow(const Array& params, bool fHelp)
     string const destination_address = params[5].get_str();
     */
     string const destination_address = params[0].get_str();
-    uint256 const bind_tx = ParseHashV(params[1], "bind tx id");
-    string const tor_address = params[2].get_str();
-    boost::uint64_t const bind_nonce = params[3].get_uint64();
+    uint256 const sender_confirmtx_hash = ParseHashV(params[1], "bind tx id");
+    string const sender_tor_address = params[2].get_str();
+    boost::uint64_t const sender_address_bind_nonce = params[3].get_uint64();
     boost::uint64_t const transfer_nonce = params[4].get_uint64();
-    vector<unsigned char> const delegate_tx = ParseHexV(params[5], "delegate tx id");
+    vector<unsigned char> const transfer_tx_hash = ParseHexV(params[5], "transfer tx id");
 
     CBitcoinAddress destination_address_parsed(destination_address);
     if (!destination_address_parsed.IsValid())
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid MIL address");
 
     CNetAddr tor_address_parsed;
-    tor_address_parsed.SetSpecial(tor_address);
+    tor_address_parsed.SetSpecial(sender_tor_address);
 
     vector<unsigned char> identification = CreateAddressIdentification(
         tor_address_parsed,
-        bind_nonce
+        sender_address_bind_nonce
     );
 
     CTransaction prevTx;
     uint256 hashBlock = 0;
-    if (!GetTransaction(bind_tx, prevTx, hashBlock)) {
+    if (!GetTransaction(sender_confirmtx_hash, prevTx, hashBlock)) {
         throw runtime_error("transaction unknown");
     }
     int output_index = 0;
@@ -756,8 +756,8 @@ Value createtransferescrow(const Array& params, bool fHelp)
 
     CTxIn& input = rawTx.vin[0];
 
-    input.prevout = COutPoint(bind_tx, output_index);
-    input.scriptSig << delegate_tx;
+    input.prevout = COutPoint(sender_confirmtx_hash, output_index);
+    input.scriptSig << transfer_tx_hash;
     input.scriptSig << transfer_nonce;
     input.scriptSig << identification;
     input.scriptSig << OP_TRUE;

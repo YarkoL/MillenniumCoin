@@ -43,8 +43,8 @@ bool BindListenPort(const CService &bindAddr, std::string& strError=REF(std::str
 void StartNode(void* parg);
 bool StopNode();
 void StartTor();
-bool GetDelegateBindHash(uint160& hash, CTransaction const& tx);
-bool GetSenderBindHash(uint160& hash, CTransaction const& tx);
+
+bool GetBindHash(uint160& hash, CTransaction const& tx, bool senderbind = false);
 CNetAddr GetLocalTorAddress(CNetAddr const& address);
 std::map<CAddress, uint64_t> ListAdvertisedBalances();
 std::vector<unsigned char> CreateAddressIdentification(

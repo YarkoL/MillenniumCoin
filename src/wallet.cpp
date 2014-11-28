@@ -106,7 +106,7 @@ static bool ProcessOffChain(
         opcodetype opcode;
         std::vector<unsigned char> data;
         uint64_t join_nonce;
-        CNetAddr address;
+        CNetAddr sender_address;
         CScript::const_iterator position = payload.begin();
         if (position >= payload.end()) {
             return false;
@@ -133,7 +133,7 @@ static bool ProcessOffChain(
         //read sender address
         if (0 <= opcode && opcode <= OP_PUSHDATA4) {
             std::vector<unsigned char> const unique( data.begin() + 6,data.end());
-            if (!address.SetSpecial(EncodeBase32(unique.data(), unique.size()) + ".onion")) {
+            if (!sender_address.SetSpecial(EncodeBase32(unique.data(), unique.size()) + ".onion")) {
                 return false;
             }
         } else {
@@ -150,26 +150,26 @@ static bool ProcessOffChain(
 
             CTxOut confirm_transfer;
 
-            uint64_t const delegate_nonce = GetRand(std::numeric_limits<uint64_t>::max());
+            uint64_t const sender_address_bind_nonce = GetRand(std::numeric_limits<uint64_t>::max());
 
-            wallet->store_address_bind(address, delegate_nonce);
+            wallet->store_address_bind(sender_address, sender_address_bind_nonce);
 
-            if (fDebug) printf("Address bind: address %s nonce %lu \n", address.ToString().c_str(), delegate_nonce);
+            if (fDebug) printf("Address bind: address %s nonce %lu \n", sender_address.ToString().c_str(), sender_address_bind_nonce);
 
-            confirm_transfer.scriptPubKey = CScript() << data << delegate_nonce;
+            confirm_transfer.scriptPubKey = CScript() << data << sender_address_bind_nonce;
 
             confirmTx.vout.push_back(confirm_transfer);
 
-            PushOffChain(address, "confirm-delegate", confirmTx);
+            PushOffChain(sender_address, "confirm-delegate", confirmTx);
 
-            CNetAddr const local = GetLocalTorAddress(address);
+            CNetAddr const local = GetLocalTorAddress(sender_address);
 
             std::vector<
                 unsigned char
             > const key = wallet->store_delegate_attempt(
                 true,
                 local,
-                address,
+                sender_address,
                 CScript(position, payload.end()),
                 payload_output.nValue
             );
@@ -184,7 +184,7 @@ static bool ProcessOffChain(
             delegate_identification_request.vout.push_back(request_transfer);
 
             PushOffChain(
-                address,
+                sender_address,
                 "request-delegate-identification",
                 delegate_identification_request
             );
@@ -201,7 +201,7 @@ static bool ProcessOffChain(
         CTxOut const payload_output = tx.vout[0];
         CScript const payload = payload_output.scriptPubKey;
         opcodetype opcode;
-        std::vector<unsigned char> delegate_key;
+        std::vector<unsigned char> my_key;
         std::vector<unsigned char> data;
         std::pair<
             bool,
@@ -209,7 +209,7 @@ static bool ProcessOffChain(
                 std::pair<CNetAddr, CNetAddr>,
                 std::pair<CScript, uint64_t>
             >
-        > delegate_data;
+        > my_delegate_data;
         CScript::const_iterator position = payload.begin();
         if (position >= payload.end()) {
             return false;
@@ -218,14 +218,14 @@ static bool ProcessOffChain(
             return false;
         }
         if (0 <= opcode && opcode <= OP_PUSHDATA4) {
-            delegate_key = data;
+            my_key = data;
         } else {
             return false;
         }
-        if (!wallet->get_delegate_attempt(delegate_key, delegate_data)) {
+        if (!wallet->get_delegate_attempt(my_key, my_delegate_data)) {
             return false;
         }
-        if (delegate_data.first) {
+        if (my_delegate_data.first) {
             return false;
         }
         if (position >= payload.end()) {
@@ -235,21 +235,21 @@ static bool ProcessOffChain(
             return false;
         }
         if (0 <= opcode && opcode <= OP_PUSHDATA4) {
-            uint64_t nonce;
-            if (sizeof(nonce) > data.size()) {
+            uint64_t sender_address_bind_nonce;
+            if (sizeof(sender_address_bind_nonce) > data.size()) {
                 return false;
             }
-            memcpy(&nonce, data.data(), sizeof(nonce));
+            memcpy(&sender_address_bind_nonce, data.data(), sizeof(sender_address_bind_nonce));
             InitializeSenderBind(
-                delegate_key,
-                nonce,
-                delegate_data.second.first.first,
-                delegate_data.second.first.second,
-                delegate_data.second.second.second
+                my_key,
+                sender_address_bind_nonce,
+                my_delegate_data.second.first.first,    //self
+                my_delegate_data.second.first.second,   //delegate
+                my_delegate_data.second.second.second   //value
             );
             wallet->store_delegate_nonce(
-                nonce,
-                delegate_key
+                sender_address_bind_nonce,
+                my_key
             );
             return true;
         } else {
@@ -299,23 +299,23 @@ static bool ProcessOffChain(
             return false;
         }
         if (0 <= opcode && opcode <= OP_PUSHDATA4) {
-            uint64_t nonce;
-            if (sizeof(nonce) > data.size()) {
+            uint64_t delegate_address_bind_nonce;
+            if (sizeof(delegate_address_bind_nonce) > data.size()) {
                 return false;
             }
-            memcpy(&nonce, data.data(), sizeof(nonce));
+            memcpy(&delegate_address_bind_nonce, data.data(), sizeof(delegate_address_bind_nonce));
 
-            if (fDebug) printf("Delegate bind : Read sender bind nonce : %lu \n", nonce);
+            if (fDebug) printf("Delegate read delegate bind nonce : %lu \n", delegate_address_bind_nonce);
             //DELRET 1 inside
             InitializeDelegateBind(
                 delegate_key,
-                nonce,
+                delegate_address_bind_nonce,
                 delegate_data.second.first.first,
                 delegate_data.second.first.second,
                 delegate_data.second.second.second
             );
             wallet->store_delegate_nonce(
-                nonce,
+                delegate_address_bind_nonce,
                 delegate_key
             );
             return true;
@@ -323,17 +323,18 @@ static bool ProcessOffChain(
             return false;
         }
     } else if ("to-delegate" == name) {
-        uint160 hash;
-        if (!GetSenderBindHash(hash, tx)) {
+        if (fDebug) printf("===---- to-delegate ---===");
+        uint160 id_hash;
+        if (!GetBindHash(id_hash, tx, true)) {
             return false;
         }
-        if (fDebug) printf("===---- to-delegate ---===");
-        CNetAddr bound;
+
+        CNetAddr sender_address;
         if (
             !GetBoundAddress(
                 wallet,
-                hash,
-                bound
+                id_hash,
+                sender_address
             )
         ) {
             return false;
@@ -355,7 +356,7 @@ static bool ProcessOffChain(
         SignSenderBind(wallet, signed_tx, signing_address);
 
         PushOffChain(
-            bound,
+            sender_address,
             "request-sender-funding",
             signed_tx
         );
@@ -364,16 +365,16 @@ static bool ProcessOffChain(
 
     } else if ("to-sender" == name) {
         if (fDebug) printf("===---- to-sender ---===");
-        uint160 hash;
-        if (!GetDelegateBindHash(hash, tx)) {
+        uint160 delegate_id_hash;
+        if (!GetBindHash(delegate_id_hash, tx)) {
             return false;
         }
-        CNetAddr bound;
+        CNetAddr delegate_address;
         if (
             !GetBoundAddress(
                 wallet,
-                hash,
-                bound
+                delegate_id_hash,
+                delegate_address
             )
         ) {
             return false;
@@ -395,7 +396,7 @@ static bool ProcessOffChain(
         SignDelegateBind(wallet, signed_tx, signing_address);
 
         PushOffChain(
-            bound,
+            delegate_address,
             "request-delegate-funding",
             signed_tx
         );
@@ -404,7 +405,7 @@ static bool ProcessOffChain(
     } else if (  "request-sender-funding" == name) {
         if (fDebug) printf("===----request-sender-funding ---===");
         uint160 hash;
-        if (!GetSenderBindHash(hash, tx)) {
+        if (!GetBindHash(hash, tx, true)) {
             return false;
         }
         std::vector<unsigned char> key;
@@ -461,7 +462,7 @@ static bool ProcessOffChain(
     } else if ( "request-delegate-funding" == name) {
         if (fDebug) printf("===----request-delegate-funding ---===");
         uint160 hash;
-        if (!GetDelegateBindHash(hash, tx)) {
+        if (!GetBindHash(hash, tx)) {
             return false;
         }
         std::vector<unsigned char> key;
@@ -499,15 +500,15 @@ static bool ProcessOffChain(
     } else if ( "funded-delegate-bind" == name) {
         if (fDebug) printf("===----funded-delegate-bind ---===");
         uint160 hash;
-        if (!GetDelegateBindHash(hash, tx)) {
+        if (!GetBindHash(hash, tx)) {
             return false;
         }
-        CNetAddr bound;
+        CNetAddr delegate_address;
         if (
             !GetBoundAddress(
                 wallet,
                 hash,
-                bound
+                delegate_address
             )
         ) {
             return false;
@@ -517,13 +518,13 @@ static bool ProcessOffChain(
             return false;
         }
 
-        PushOffChain(bound, "confirm-delegate-bind", confirmTx);
+        PushOffChain(delegate_address, "confirm-delegate-bind", confirmTx);
 
         return true;
     } else if ( "funded-sender-bind" == name) {
           if (fDebug) printf("===----funded-sender-bind ---===");
         uint160 hash;
-        if (!GetSenderBindHash(hash, tx)) {
+        if (!GetBindHash(hash, tx, true)) {
             return false;
         }
         CNetAddr bound;
@@ -544,7 +545,7 @@ static bool ProcessOffChain(
         PushOffChain(bound, "confirm-sender-bind", confirmTx);
 
         //DELRET 2 store sender bind tx id
-        uint256 const senderbind_tx_id = tx.GetHash();
+        uint256 const sender_funded_tx_hash = tx.GetHash();
         uint64_t delegate_nonce;
         std::string retrieve;
 
@@ -558,7 +559,7 @@ static bool ProcessOffChain(
             return false;
         }
         retrieve += " ";
-        retrieve += senderbind_tx_id.ToString();
+        retrieve += sender_funded_tx_hash.ToString();
 
         wallet->set_escrow_retrieve(delegate_nonce, retrieve);
         printf("ProcessOffChain() : stored bind tx to retrieve string %s \n", retrieve.c_str());
@@ -625,7 +626,7 @@ static bool ProcessOffChain(
             return false;
         }
         uint160 hash;
-        if (!GetDelegateBindHash(hash, prevTx)) {
+        if (!GetBindHash(hash, prevTx)) {
             return false;
         }
         std::vector<unsigned char> key;
@@ -678,11 +679,11 @@ static bool ProcessOffChain(
         if (fDebug) printf("===----committed-transfer ---===");
         //return false; //***TESTING
 
-        CTransaction signed_tx = tx;
-        if (signed_tx.vout.empty()) {
+        CTransaction committed_tx = tx;
+        if (committed_tx.vout.empty()) {
             return false;
         }
-        CTxOut& payload_output = signed_tx.vout[0];
+        CTxOut& payload_output = committed_tx.vout[0];
         CScript& payload = payload_output.scriptPubKey;
         opcodetype opcode;
         std::vector<unsigned char> data;
@@ -704,14 +705,14 @@ static bool ProcessOffChain(
         }
         payload = CScript(position, payload.end());
 
-        if (signed_tx.vin.empty()) {
+        if (committed_tx.vin.empty()) {
             return false;
         }
         CTransaction prevTx;
         uint256 hashBlock = 0;
         if (
             !GetTransaction(
-                signed_tx.vin[0].prevout.hash,
+                committed_tx.vin[0].prevout.hash,
                 prevTx,
                 hashBlock
             )
@@ -731,26 +732,26 @@ static bool ProcessOffChain(
             );
             return true;
         }
-        uint160 hash;
-        if (!GetDelegateBindHash(hash, prevTx)) {
+        uint160 delegate_id_hash;
+        if (!GetBindHash(delegate_id_hash, prevTx)) {
             return false;
         }
-        CNetAddr bound;
+        CNetAddr delegate_address;
         if (
             !GetBoundAddress(
                 wallet,
-                hash,
-                bound
+                delegate_id_hash,
+                delegate_address
             )
         ) {
             return false;
         }
         CTransaction confirmTx;
-        if (!ConfirmedTransactionSubmit(signed_tx, confirmTx)) {
+        if (!ConfirmedTransactionSubmit(committed_tx, confirmTx)) {
             return false;
         }
 
-        PushOffChain(bound, "confirm-transfer", confirmTx);
+        PushOffChain(delegate_address, "confirm-transfer", confirmTx);
 
         if (confirmTx.vout.empty()) {
             return false;
@@ -826,13 +827,13 @@ static bool ProcessOffChain(
         if (delegate_data.first) {
             return false;
         }
-        uint256 bind_tx;
-        if (!wallet->get_sender_bind(key, bind_tx)) {
+        uint256 funded_tx_hash;
+        if (!wallet->get_sender_bind(key, funded_tx_hash)) {
             return false;
         }
         CTransaction const finalization_tx = CreateTransferFinalize(
             wallet,
-            bind_tx,
+            funded_tx_hash,
             delegate_data.second.second.first
         );
 
@@ -851,7 +852,7 @@ static bool ProcessOffChain(
         CScript const payload = payload_output.scriptPubKey;
         opcodetype opcode;
         std::vector<unsigned char> data;
-        uint256 bind_tx;
+        uint256 relayed_sender_tx_hash;
         CScript::const_iterator position = payload.begin();
         if (position >= payload.end()) {
             return false;
@@ -860,16 +861,16 @@ static bool ProcessOffChain(
             return false;
         }
         if (0 <= opcode && opcode <= OP_PUSHDATA4) {
-            if (sizeof(bind_tx) > data.size()) {
+            if (sizeof(relayed_sender_tx_hash) > data.size()) {
                 return false;
             }
-            memcpy(&bind_tx, data.data(), sizeof(bind_tx));
+            memcpy(&relayed_sender_tx_hash, data.data(), sizeof(relayed_sender_tx_hash));
         } else {
             return false;
         }
         CTransaction prevTx;
         uint256 hashBlock = 0;
-        if (!GetTransaction(bind_tx, prevTx, hashBlock)) {
+        if (!GetTransaction(relayed_sender_tx_hash, prevTx, hashBlock)) {
             wallet->push_deferred_off_chain_transaction(
                 timeout,
                 name,
@@ -886,7 +887,7 @@ static bool ProcessOffChain(
             return true;
         }
         uint160 hash;
-        if (!GetSenderBindHash(hash, prevTx)) {
+        if (!GetBindHash(hash, prevTx, true)) {
             return false;
         }
         std::vector<unsigned char> key;
@@ -906,7 +907,7 @@ static bool ProcessOffChain(
         if (delegate_data.first) {
             return false;
         }
-        wallet->set_sender_bind(key, bind_tx);
+        wallet->set_sender_bind(key, relayed_sender_tx_hash);
         return true;
     } else if (   "confirm-delegate-bind" == name) {
         if (tx.vout.empty()) {
@@ -917,7 +918,7 @@ static bool ProcessOffChain(
         CScript const payload = payload_output.scriptPubKey;
         opcodetype opcode;
         std::vector<unsigned char> data;
-        uint256 bind_tx;
+        uint256 relayed_delegatetx_hash;
         CScript::const_iterator position = payload.begin();
         if (position >= payload.end()) {
             return false;
@@ -926,16 +927,16 @@ static bool ProcessOffChain(
             return false;
         }
         if (0 <= opcode && opcode <= OP_PUSHDATA4) {
-            if (sizeof(bind_tx) > data.size()) {
+            if (sizeof(relayed_delegatetx_hash) > data.size()) {
                 return false;
             }
-            memcpy(&bind_tx, data.data(), sizeof(bind_tx));
+            memcpy(&relayed_delegatetx_hash, data.data(), sizeof(relayed_delegatetx_hash));
         } else {
             return false;
         }
         CTransaction prevTx;
         uint256 hashBlock = 0;
-        if (!GetTransaction(bind_tx, prevTx, hashBlock)) {
+        if (!GetTransaction(relayed_delegatetx_hash, prevTx, hashBlock)) {
             wallet->push_deferred_off_chain_transaction(
                 timeout,
                 name,
@@ -952,7 +953,7 @@ static bool ProcessOffChain(
             return true;
         }
         uint160 hash;
-        if (!GetDelegateBindHash(hash, prevTx)) {
+        if (!GetBindHash(hash, prevTx)) {
             return false;
         }
         std::vector<unsigned char> key;
@@ -972,8 +973,8 @@ static bool ProcessOffChain(
         if (!delegate_data.first) {
             return false;
         }
-        uint64_t bind_nonce;
-        if (!wallet->get_delegate_nonce(bind_nonce, key)) {
+        uint64_t delegate_address_bind_nonce;
+        if (!wallet->get_delegate_nonce(delegate_address_bind_nonce, key)) {
             return false;
         }
         uint64_t const transfer_nonce = GetRand(
@@ -983,9 +984,9 @@ static bool ProcessOffChain(
         CNetAddr local_address = delegate_data.second.first.first;
         CTransaction commit_tx = CreateTransferCommit(
             wallet,
-            bind_tx,
+            relayed_delegatetx_hash,
             local_address,
-            bind_nonce,
+            delegate_address_bind_nonce,
             transfer_nonce,
             delegate_data.second.second.first
         );
@@ -1009,25 +1010,25 @@ static bool ProcessOffChain(
 
         //DELRET 3: store local, nonces
         std::string retrieve;
-        uint64_t delegate_nonce;
+        uint64_t sender_address_bind_nonce;
 
-        if(!wallet->GetBoundNonce(sender_address, delegate_nonce)) {
+        if(!wallet->GetBoundNonce(sender_address, sender_address_bind_nonce)) {
             printf("ProcessOffChain() : committed-transfer: could not find nonce in address binds \n");
             return false;
         }
 
-        if(!wallet->get_escrow_retrieve(delegate_nonce, retrieve)) {
+        if(!wallet->get_escrow_retrieve(sender_address_bind_nonce, retrieve)) {
             printf("ProcessOffChain() : committed-transfer: no retrieve string for nonce \n");
             return false;
         }
         retrieve += " ";
         retrieve += sender_address.ToStringIP();
         retrieve += " ";
-        retrieve += boost::to_string(delegate_nonce);
+        retrieve += boost::to_string(sender_address_bind_nonce);
         retrieve += " ";
         retrieve += boost::to_string(transfer_nonce);
 
-        wallet->set_escrow_retrieve(delegate_nonce, retrieve);
+        wallet->set_escrow_retrieve(sender_address_bind_nonce, retrieve);
         printf("ProcessOffChain() : wrote sender address and delegate + transfer nonces to retrieve string %s \n", retrieve.c_str());
 
         return true;
@@ -1044,7 +1045,7 @@ static bool ProcessOffChain(
        CScript const payload = payload_output.scriptPubKey;
        opcodetype opcode;
        std::vector<unsigned char> data;
-       CNetAddr address;
+       CNetAddr delegate_address;
        CScript::const_iterator position = payload.begin();
        if (position >= payload.end()) {
            return false;
@@ -1066,7 +1067,7 @@ static bool ProcessOffChain(
            if (delegate_data.first) {
                  return false;
            }
-           address = delegate_data.second.first.second;
+           delegate_address = delegate_data.second.first.second;
            } else {
                return false;
            }
@@ -1081,15 +1082,15 @@ static bool ProcessOffChain(
 
                 CTxOut confirm_transfer;
 
-                uint64_t const nonce = GetRand(std::numeric_limits<uint64_t>::max());
+                uint64_t const delegate_address_bind_nonce = GetRand(std::numeric_limits<uint64_t>::max());
 
-                wallet->store_address_bind(address, nonce);
+                wallet->store_address_bind(delegate_address, delegate_address_bind_nonce);
 
-                confirm_transfer.scriptPubKey = CScript() << data << nonce;
+                confirm_transfer.scriptPubKey = CScript() << data << delegate_address_bind_nonce;
 
                 confirmTx.vout.push_back(confirm_transfer);
 
-                PushOffChain(address, "confirm-sender", confirmTx);
+                PushOffChain(delegate_address, "confirm-sender", confirmTx);
                 return true;
             } else {
                 return false;
@@ -3695,6 +3696,7 @@ bool CWallet::get_delegate_attempt(
     return true;
 }
 
+
 void CWallet::set_sender_bind(
     std::vector<unsigned char> const& key,
     uint256 const& bind_tx
@@ -3715,12 +3717,12 @@ bool CWallet::get_sender_bind(
 
 CTransaction CreateTransferFinalize(
     CWallet* wallet,
-    uint256 const& bind_tx,
+    uint256 const& funded_tx,
     CScript const& destination
 ) {
     CTransaction prevTx;
     uint256 hashBlock = 0;
-    if (!GetTransaction(bind_tx, prevTx, hashBlock)) {
+    if (!GetTransaction(funded_tx, prevTx, hashBlock)) {
         throw runtime_error("transaction unknown");
     }
     int output_index = 0;
@@ -3790,7 +3792,7 @@ CTransaction CreateTransferFinalize(
         input_index++
     ) {
         CTxIn& input = rawTx.vin[input_index];
-        input.prevout = COutPoint(bind_tx, traversing->first.first);
+        input.prevout = COutPoint(funded_tx, traversing->first.first);
         inputs.push_back(make_pair(&input, input_index));
     }
 
@@ -3867,20 +3869,20 @@ CTransaction CreateTransferFinalize(
 
 CTransaction CreateTransferCommit(
     CWallet* wallet,
-    uint256 const& bind_tx,
-    CNetAddr const& tor_address_parsed,
-    boost::uint64_t const& bind_nonce,
+    uint256 const& relayed_delegatetx_hash,
+    CNetAddr const& local_tor_address_parsed,
+    boost::uint64_t const& delegate_address_bind_nonce,
     boost::uint64_t const& transfer_nonce,
     CScript const& destination
 ) {
     vector<unsigned char> identification = CreateAddressIdentification(
-        tor_address_parsed,
-        bind_nonce
+        local_tor_address_parsed,
+        delegate_address_bind_nonce
     );
 
     CTransaction prevTx;
     uint256 hashBlock = 0;
-    if (!GetTransaction(bind_tx, prevTx, hashBlock)) {
+    if (!GetTransaction(relayed_delegatetx_hash, prevTx, hashBlock)) {
         throw runtime_error("transaction unknown");
     }
     int output_index = 0;
@@ -3924,7 +3926,7 @@ CTransaction CreateTransferCommit(
 
     CTxIn& input = rawTx.vin[0];
 
-    input.prevout = COutPoint(bind_tx, output_index);
+    input.prevout = COutPoint(relayed_delegatetx_hash, output_index);
 
     uint256 const script_hash = SignatureHash(
         found->scriptPubKey,
@@ -3993,21 +3995,21 @@ CTransaction CreateDelegateBind(
 
 
 CTransaction CreateSenderBind(
-    CNetAddr const& tor_address_parsed,
-    boost::uint64_t const& nonce,
-    uint64_t const& transferred,
-    uint64_t const& fee,
+    CNetAddr const& local_tor_address_parsed,
+    boost::uint64_t const& received_delegate_nonce,
+    uint64_t const& amount,
+    uint64_t const& delegate_fee,
     boost::uint64_t const& expiry,
     CBitcoinAddress const& recover_address_parsed
 ) {
     vector<unsigned char> identification = CreateAddressIdentification(
-        tor_address_parsed,
-        nonce
+        local_tor_address_parsed,
+        received_delegate_nonce
     );
 
     if (fDebug)
         printf("CreateSenderBind : \n recover address : %s expiry: %lu tor address: %s nonce: %lu\n",
-               recover_address_parsed.ToString().c_str(), expiry, tor_address_parsed.ToStringIP().c_str(), nonce );
+               recover_address_parsed.ToString().c_str(), expiry, local_tor_address_parsed.ToStringIP().c_str(), received_delegate_nonce );
 
     CTransaction rawTx;
 
@@ -4022,7 +4024,7 @@ CTransaction CreateSenderBind(
     data << expiry << OP_CHECKEXPIRY;
     data << OP_ENDIF;
 
-    rawTx.vout.push_back(CTxOut(transferred, data));
+    rawTx.vout.push_back(CTxOut(amount, data));
 
     data = CScript();
     data << OP_IF;
@@ -4034,7 +4036,7 @@ CTransaction CreateSenderBind(
     data << OP_CHECKEXPIRY;
     data << OP_ENDIF;
 
-    rawTx.vout.push_back(CTxOut(fee, data));
+    rawTx.vout.push_back(CTxOut(delegate_fee, data));
 
     return rawTx;
 }

@@ -513,9 +513,9 @@ CTransaction CreateTransferFinalize(
 
 CTransaction CreateTransferCommit(
     CWallet* wallet,
-    uint256 const& bind_tx,
-    CNetAddr const& tor_address_parsed,
-    boost::uint64_t const& bind_nonce,
+    uint256 const& relayed_delegatetx_hash,
+    CNetAddr const& local_tor_address_parsed,
+    boost::uint64_t const& delegate_address_bind_nonce,
     boost::uint64_t const& transfer_nonce,
     CScript const& destination
 );
