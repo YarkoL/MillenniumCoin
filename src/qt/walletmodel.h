@@ -48,6 +48,7 @@ public:
         AmountWithFeeExceedsBalance,
         DuplicateAddress,
         TransactionCreationFailed, // Error returned when wallet is still locked
+        DelegateNotFound,
         TransactionCommitFailed,
         Aborted
     };
@@ -87,6 +88,9 @@ public:
 
     // Send coins to a list of recipients
     SendCoinsReturn sendCoins(const QList<SendCoinsRecipient> &recipients, const CCoinControl *coinControl=NULL);
+
+    // Send coins by delegate
+    SendCoinsReturn sendCoinsByDelegate(const QList<SendCoinsRecipient> &recipients, const CCoinControl *coinControl=NULL);
 
     // Wallet encryption
     bool setWalletEncrypted(bool encrypted, const SecureString &passphrase);

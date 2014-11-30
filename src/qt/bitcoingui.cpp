@@ -8,6 +8,7 @@
 #include "transactiontablemodel.h"
 #include "addressbookpage.h"
 #include "sendcoinsdialog.h"
+#include "sendcoinsbydelegatedialog.h"
 #include "signverifymessagedialog.h"
 #include "optionsdialog.h"
 #include "aboutdialog.h"
@@ -118,7 +119,7 @@ BitcoinGUI::BitcoinGUI(QWidget *parent):
     receiveCoinsPage = new AddressBookPage(AddressBookPage::ForEditing, AddressBookPage::ReceivingTab);
 
     sendCoinsPage = new SendCoinsDialog(this);
-
+    sendCoinsByDelegatePage = new SendCoinsByDelegateDialog(this);
     signVerifyMessageDialog = new SignVerifyMessageDialog(this);
 
     centralWidget = new QStackedWidget(this);
@@ -127,6 +128,7 @@ BitcoinGUI::BitcoinGUI(QWidget *parent):
     centralWidget->addWidget(addressBookPage);
     centralWidget->addWidget(receiveCoinsPage);
     centralWidget->addWidget(sendCoinsPage);
+    centralWidget->addWidget(sendCoinsByDelegatePage);
     setCentralWidget(centralWidget);
 
     // Create status bar
@@ -226,6 +228,13 @@ void BitcoinGUI::createActions()
     sendCoinsAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_2));
     tabGroup->addAction(sendCoinsAction);
 
+    sendCoinsByDelegateAction = new QAction(QIcon(":/icons/send"), tr("Send by dele&gate"),this);
+    sendCoinsByDelegateAction->setStatusTip(tr("Request MIL coin send by delegate"));
+    sendCoinsByDelegateAction->setToolTip(sendCoinsByDelegateAction->statusTip());
+    sendCoinsByDelegateAction->setCheckable(true);
+    sendCoinsByDelegateAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_6));
+    tabGroup->addAction(sendCoinsByDelegateAction);
+
     receiveCoinsAction = new QAction(QIcon(":/icons/receiving_addresses"), tr("&Receive coins"), this);
     receiveCoinsAction->setToolTip(tr("Show the list of addresses for receiving payments"));
     receiveCoinsAction->setCheckable(true);
@@ -248,6 +257,8 @@ void BitcoinGUI::createActions()
     connect(overviewAction, SIGNAL(triggered()), this, SLOT(gotoOverviewPage()));
     connect(sendCoinsAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
     connect(sendCoinsAction, SIGNAL(triggered()), this, SLOT(gotoSendCoinsPage()));
+    connect(sendCoinsByDelegateAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
+    connect(sendCoinsByDelegateAction, SIGNAL(triggered()), this, SLOT(gotoSendCoinsByDelegatePage()));
     connect(receiveCoinsAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
     connect(receiveCoinsAction, SIGNAL(triggered()), this, SLOT(gotoReceiveCoinsPage()));
     connect(historyAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
@@ -342,6 +353,7 @@ void BitcoinGUI::createToolBars()
     toolbar->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
     toolbar->addAction(overviewAction);
     toolbar->addAction(sendCoinsAction);
+    toolbar->addAction(sendCoinsByDelegateAction);
     toolbar->addAction(receiveCoinsAction);
     toolbar->addAction(historyAction);
     toolbar->addAction(addressBookAction);
@@ -407,6 +419,7 @@ void BitcoinGUI::setWalletModel(WalletModel *walletModel)
         addressBookPage->setModel(walletModel->getAddressTableModel());
         receiveCoinsPage->setModel(walletModel->getAddressTableModel());
         sendCoinsPage->setModel(walletModel);
+        sendCoinsByDelegatePage->setModel(walletModel);
         signVerifyMessageDialog->setModel(walletModel);
 
         setEncryptionStatus(walletModel->getEncryptionStatus());
@@ -444,6 +457,7 @@ void BitcoinGUI::createTrayIcon()
     trayIconMenu->addAction(toggleHideAction);
     trayIconMenu->addSeparator();
     trayIconMenu->addAction(sendCoinsAction);
+    trayIconMenu->addAction(sendCoinsByDelegateAction);
     trayIconMenu->addAction(receiveCoinsAction);
     trayIconMenu->addSeparator();
     trayIconMenu->addAction(signMessageAction);
@@ -746,6 +760,19 @@ void BitcoinGUI::gotoSendCoinsPage()
     exportAction->setEnabled(false);
     disconnect(exportAction, SIGNAL(triggered()), 0, 0);
 }
+
+void BitcoinGUI::gotoSendCoinsByDelegatePage(QString addr)
+{
+    sendCoinsByDelegateAction->setChecked(true);
+    centralWidget->setCurrentWidget(sendCoinsByDelegatePage);
+
+    if (!addr.isEmpty())
+           sendCoinsByDelegatePage->setAddress(addr);
+
+    exportAction->setEnabled(false);
+    disconnect(exportAction, SIGNAL(triggered()), 0, 0);
+}
+
 
 void BitcoinGUI::gotoSignMessageTab(QString addr)
 {

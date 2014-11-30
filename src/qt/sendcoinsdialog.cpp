@@ -220,6 +220,7 @@ void SendCoinsDialog::on_sendButton_clicked()
         break;
     case WalletModel::Aborted: // User aborted, nothing to do
         break;
+    case WalletModel::DelegateNotFound: //TODO this dialog status shouldn't be here at all
     case WalletModel::OK:
         accept();
         CoinControlDialog::coinControl->UnSelectAll();

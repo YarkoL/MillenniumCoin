@@ -236,6 +236,103 @@ WalletModel::SendCoinsReturn WalletModel::sendCoins(const QList<SendCoinsRecipie
     return SendCoinsReturn(OK, 0, hex);
 }
 
+WalletModel::SendCoinsReturn WalletModel::sendCoinsByDelegate(
+    const QList<SendCoinsRecipient> &recipients,
+    const CCoinControl *coinControl
+) {
+    qint64 total = 0;
+    QSet<QString> setAddress;
+
+    if(recipients.empty())
+    {
+        return OK;
+    }
+
+    CBitcoinAddress addressParsed;
+    bool address_found = false;
+
+    // Pre-check input data for validity
+    foreach(const SendCoinsRecipient &rcp, recipients)
+    {
+        if(address_found)
+        {
+            return InvalidAddress;
+        }
+        if(!validateAddress(rcp.address))
+        {
+            return InvalidAddress;
+        }
+        setAddress.insert(rcp.address);
+
+        if(rcp.amount <= 0)
+        {
+            return InvalidAmount;
+        }
+        total += rcp.amount;
+        CBitcoinAddress const parsed(rcp.address.toStdString());
+        addressParsed = parsed;
+        address_found = true;
+    }
+
+    if(recipients.size() > setAddress.size())
+    {
+        return DuplicateAddress;
+    }
+
+    //int64_t nBalance = getBalance();
+    int64_t nBalance = 0;
+    std::vector<COutput> vCoins;
+    wallet->AvailableCoins(vCoins, true, coinControl);
+
+    BOOST_FOREACH(const COutput& out, vCoins)
+        nBalance += out.tx->vout[out.i].nValue;
+
+    if(total > nBalance)
+    {
+        return AmountExceedsBalance;
+    }
+
+    if((total + nTransactionFee + nDelegateFee) > nBalance)
+    {
+        return SendCoinsReturn(
+            AmountWithFeeExceedsBalance,
+            nTransactionFee + nDelegateFee
+        );
+    }
+
+    {
+        LOCK2(cs_main, wallet->cs_wallet);
+
+        CAddress delegate;
+
+        if (!SendByDelegate(wallet, addressParsed, total, delegate)) {
+
+            return DelegateNotFound;
+        }
+    }
+
+    // Add addresses / update labels that we've sent to to the address book
+    foreach(const SendCoinsRecipient &rcp, recipients)
+    {
+        std::string strAddress = rcp.address.toStdString();
+        CTxDestination dest = CBitcoinAddress(strAddress).Get();
+        std::string strLabel = rcp.label.toStdString();
+        {
+            LOCK(wallet->cs_wallet);
+
+            std::map<CTxDestination, std::string>::iterator mi = wallet->mapAddressBook.find(dest);
+
+            // Check if we have a new address or an updated label
+            if (mi == wallet->mapAddressBook.end() || mi->second != strLabel)
+            {
+                wallet->SetAddressBookName(dest, strLabel);
+            }
+        }
+    }
+
+    return SendCoinsReturn(OK, 0, "");
+}
+
 OptionsModel *WalletModel::getOptionsModel()
 {
     return optionsModel;
