@@ -33,6 +33,7 @@ public:
 
     void setFocus();
 
+    void setAddress(const QString &address);
 public slots:
     void setRemoveEnabled(bool enabled);
     void clear();

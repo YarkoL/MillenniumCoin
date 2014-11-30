@@ -172,3 +172,9 @@ void SendCoinsEntry::updateDisplayUnit()
         ui->payAmount->setDisplayUnit(model->getOptionsModel()->getDisplayUnit());
     }
 }
+
+void SendCoinsEntry::setAddress(const QString &address)
+{
+    ui->payTo->setText(address);
+    ui->payAmount->setFocus();
+}

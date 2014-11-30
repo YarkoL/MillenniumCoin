@@ -1,5 +1,5 @@
-#ifndef SENDCOINSDIALOG_H
-#define SENDCOINSDIALOG_H
+#ifndef SENDCOINSBYDELEGATEDIALOG_H
+#define SENDCOINSBYDELEGATEDIALOG_H
 
 #include <QDialog>
 #include <QString>
@@ -16,13 +16,13 @@ class QUrl;
 QT_END_NAMESPACE
 
 /** Dialog for sending bitcoins */
-class SendCoinsDialog : public QDialog
+class SendCoinsByDelegateDialog : public QDialog
 {
     Q_OBJECT
 
 public:
-    explicit SendCoinsDialog(QWidget *parent = 0);
-    ~SendCoinsDialog();
+    explicit SendCoinsByDelegateDialog(QWidget *parent = 0);
+    ~SendCoinsByDelegateDialog();
 
     void setModel(WalletModel *model);
 
@@ -32,6 +32,7 @@ public:
 
     void pasteEntry(const SendCoinsRecipient &rv);
     bool handleURI(const QString &uri);
+    void setAddress(const QString &address);
 
 public slots:
     void clear();
@@ -65,4 +66,4 @@ private slots:
     void coinControlClipboardChange();
 };
 
-#endif // SENDCOINSDIALOG_H
+#endif // SENDCOINSBYDELEGATEDIALOG_H
