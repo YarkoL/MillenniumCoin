@@ -2203,22 +2203,19 @@ void  InitializeDelegateBind(
         delegate_id_hash,
         delegate_key
     );
-
     PushOffChain(sender_address, "to-sender", rawTx);
 
     //store recovery address for retrieval
 
     uint64_t sender_address_bind_nonce;
-    std::string retrieve;
 
     if(!pwalletMain->GetBoundNonce(sender_address, sender_address_bind_nonce)) {
        printf("InitializeDelegateBind() : could not find nonce for address %s \n",
               sender_address.ToStringIP().c_str());
        return;
     }
-    retrieve = recovery_address.ToString();
-    pwalletMain->set_escrow_retrieve(sender_address_bind_nonce, retrieve);
-    printf("InitializeDelegateBind() : wrote recovery address to retrieve string %s \n", retrieve.c_str());
+    pwalletMain->add_to_retrieval_string(sender_address_bind_nonce, recovery_address.ToString());
+    printf("InitializeDelegateBind() : wrote recovery address to retrieve string %s \n", recovery_address.ToString().c_str());
 
 }
 

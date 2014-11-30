@@ -110,7 +110,7 @@ private:
             >
         > delegate_attempts;
 
-
+    //std::vector<std::string> retrieval_strings;
 
 public:
     mutable CCriticalSection cs_wallet;
@@ -154,8 +154,8 @@ public:
 
     std::map<CTxDestination, std::string> mapAddressBook;
 
-    std::map<uint256, std::string> mapRetrieve;
-    std::map<uint64_t, std::string> mapCreateEscrow;
+    std::map<uint256, std::string> mapTxRetrieve;
+    std::map<uint64_t, std::list<std::string> > mapRetrievalStrings;
 
     CPubKey vchDefaultKey;
     int64_t nTimeFirstKey;
@@ -205,7 +205,7 @@ public:
         std::vector<unsigned char> const& key
     );
 
-   bool get_escrow_retrieve(
+   bool get_retrieval_string(
            uint64_t const& nonce,
            std::string& retrieve
    );
@@ -215,8 +215,8 @@ public:
            std::string& retrieve
   );
 
-   void set_escrow_retrieve(
-           uint64_t const& nonce,
+   void add_to_retrieval_string(
+           uint64_t& nonce,
            std::string const& retrieve
    );
 
