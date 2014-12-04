@@ -25,6 +25,19 @@
     </widget>
    </item>
    <item>
+    <widget class="QPushButton" name="retrieveButton">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="toolTip">
+      <string>Retrieve escrow</string>
+     </property>
+     <property name="text">
+      <string>Retrieve</string>
+     </property>
+    </widget>
+   </item>
+   <item>
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>

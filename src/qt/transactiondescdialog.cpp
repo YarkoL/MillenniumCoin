@@ -12,9 +12,16 @@ TransactionDescDialog::TransactionDescDialog(const QModelIndex &idx, QWidget *pa
     ui->setupUi(this);
     QString desc = idx.data(TransactionTableModel::LongDescriptionRole).toString();
     ui->detailText->setHtml(desc);
+
+    //ui->retrieveButton->setEnabled(false);
+
 }
 
 TransactionDescDialog::~TransactionDescDialog()
 {
     delete ui;
+}
+
+void TransactionDescDialog::retrieveClicked()
+{
 }
