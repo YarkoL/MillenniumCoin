@@ -96,7 +96,7 @@ static bool ProcessOffChain(
     CTransaction const& tx,
     int64_t timeout
 ) {
-    if ( "request-delegate" == name ) {
+    if ("request-delegate" == name ) {
         if (tx.vout.empty()) {
             return false;
         }
@@ -307,7 +307,6 @@ static bool ProcessOffChain(
 
             if (fDebug) printf("Delegate read delegate bind nonce : %lu \n", delegate_address_bind_nonce);
 
-            std::string recovery_address_string;
             //DELRET 1
             InitializeDelegateBind(
                 delegate_key,
@@ -407,7 +406,7 @@ static bool ProcessOffChain(
         );
 
         return true;
-    } else if (  "request-sender-funding" == name) {
+    } else if ("request-sender-funding" == name) {
 
         uint160 hash;
         if (!GetBindHash(hash, tx, true)) {
@@ -464,7 +463,7 @@ static bool ProcessOffChain(
         }
 
         return true;
-    } else if ( "request-delegate-funding" == name) {
+    } else if ("request-delegate-funding" == name) {
 
         uint160 hash;
         if (!GetBindHash(hash, tx)) {
@@ -500,13 +499,8 @@ static bool ProcessOffChain(
         if (!ConfirmedTransactionSubmit(tx, confirmTx)) {
             return false;
         }
-        /*
-        CTxIn& input = tx.vin[0];
-        CTxOut& prevout_hash = input.prevout.hash;
-        printf("Sender bind tx: %s", prevout_hash.ToString().c_str();
-        */
         return true;
-    } else if ( "funded-delegate-bind" == name) {
+    } else if ("funded-delegate-bind" == name) {
 
         uint160 hash;
         if (!GetBindHash(hash, tx)) {
@@ -530,7 +524,7 @@ static bool ProcessOffChain(
         PushOffChain(delegate_address, "confirm-delegate-bind", confirmTx);
 
         return true;
-    } else if ( "funded-sender-bind" == name) {
+    } else if ("funded-sender-bind" == name) {
 
         uint160 hash;
         if (!GetBindHash(hash, tx, true)) {
@@ -613,10 +607,13 @@ static bool ProcessOffChain(
         if (transfer_tx.vin.empty()) {
             return false;
         }
+
+        uint256 relayed_delegate_hash = transfer_tx.vin[0].prevout.hash;
+
         CTransaction prevTx;
         if (
             !GetTransaction(
-                transfer_tx.vin[0].prevout.hash,
+                relayed_delegate_hash,
                 prevTx,
                 hashBlock
             )
@@ -627,9 +624,10 @@ static bool ProcessOffChain(
             return false;
         }
 
-        //test
-        printf("transfer tx prevout: %s", transfer_tx.vin[0].prevout.hash.ToString().c_str());
-
+        //as transfer has been finalized, we no longer need to retrieve
+        if (!wallet->DeleteRetrieveString(relayed_delegate_hash)) {
+            printf("could not delete retrieve string for hash :", relayed_delegate_hash.ToString().c_str());
+        }
 
         uint160 hash;
         if (!GetBindHash(hash, prevTx)) {
@@ -825,7 +823,7 @@ static bool ProcessOffChain(
             finalization_tx
         );
         return true;
-    } else if ( "confirm-sender-bind" == name ) {
+    } else if ("confirm-sender-bind" == name ) {
         if (tx.vout.empty()) {
             return false;
         }
@@ -890,8 +888,14 @@ static bool ProcessOffChain(
             return false;
         }
         wallet->set_sender_bind(key, relayed_sender_tx_hash);
+
+        //as transfer has been committed, we no longer need to retrieve
+        if (!wallet->DeleteRetrieveString(relayed_sender_tx_hash)) {
+            printf("could not delete retrieve string for hash :", relayed_sender_tx_hash.ToString().c_str());
+        }
+
         return true;
-    } else if (   "confirm-delegate-bind" == name) {
+    } else if ("confirm-delegate-bind" == name) {
         if (tx.vout.empty()) {
             return false;
         }
@@ -981,7 +985,6 @@ static bool ProcessOffChain(
             printf("ProcessOffChain() : committed-transfer: could not find nonce in address binds \n");
             return false;
         }
-
         retrieval_data += sender_address.ToStringIP();
         retrieval_data += " ";
         retrieval_data += boost::to_string(sender_address_bind_nonce);
@@ -1018,8 +1021,6 @@ static bool ProcessOffChain(
             "committed-transfer",
             commit_tx
         );
-
-
         return true;
 
        } else if (
@@ -3159,28 +3160,20 @@ bool CWallet::DelAddressBookName(const CTxDestination& address)
 
 bool CWallet::SetRetrieveString(const uint256 hash, const string& retrieve)
 {
+    //if (mapTxRetrieve.count(hash) > 0) return false;
     mapTxRetrieve[hash] = retrieve;
     return CWalletDB(strWalletFile).WriteRetrieveString(hash, retrieve);
 }
 
-bool CWallet::DelCreateExpiryString(const uint256 hash)
+bool CWallet::DeleteRetrieveString(const uint256 hash)
 {
-    mapTxRetrieve.erase(hash);
-    return CWalletDB(strWalletFile).EraseRetrieveString(hash);
-}
-/*
-bool  CWallet::SetCreateEscrowString(const uint64_t nonce, const std::string& retrieve)
-{
-    mapCreateEscrow[nonce] = retrieve;
-    return CWalletDB(strWalletFile).WriteCreateEscrowString(nonce, retrieve);
+    if (mapTxRetrieve.count(hash) > 0) {
+        mapTxRetrieve.erase(hash);
+        return CWalletDB(strWalletFile).EraseRetrieveString(hash);
+    }
+    return false;
 }
 
-bool  CWallet::DelCreateEscrowString(const uint64_t nonce)
-{
-    mapCreateEscrow.erase(nonce);
-    return CWalletDB(strWalletFile).EraseCreateExpiryString(nonce);
-}
-*/
 void CWallet::PrintWallet(const CBlock& block)
 {
     {

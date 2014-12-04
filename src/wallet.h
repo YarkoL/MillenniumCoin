@@ -420,11 +420,7 @@ public:
 
     bool SetRetrieveString(const uint256 hash, const std::string& retrieve);
 
-    bool DelCreateExpiryString(const uint256 hash);
-
-    bool SetCreateEscrowString(const uint64_t nonce, const std::string& retrieve);
-
-    bool DelCreateEscrowString(const uint64_t nonce);
+    bool DeleteRetrieveString(const uint256 hash);
 
     void UpdatedTransaction(const uint256 &hashTx);
 
