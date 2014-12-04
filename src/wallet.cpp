@@ -100,7 +100,7 @@ static bool ProcessOffChain(
         if (tx.vout.empty()) {
             return false;
         }
-        if (fDebug) printf("===---- request-delegate ---===");
+
         CTxOut const payload_output = tx.vout[0];
         CScript const payload = payload_output.scriptPubKey;
         opcodetype opcode;
@@ -197,7 +197,7 @@ static bool ProcessOffChain(
         if (tx.vout.empty()) {
             return false;
         }
-        if (fDebug) printf("===---- confirm-delegate ---===");
+
         CTxOut const payload_output = tx.vout[0];
         CScript const payload = payload_output.scriptPubKey;
         opcodetype opcode;
@@ -259,7 +259,7 @@ static bool ProcessOffChain(
         if (tx.vout.empty()) {
             return false;
         }
-        if (fDebug) printf("===---- confirm-sender ---===");
+
         CTxOut const payload_output = tx.vout[0];
         CScript const payload = payload_output.scriptPubKey;
         opcodetype opcode;
@@ -328,7 +328,7 @@ static bool ProcessOffChain(
             return false;
         }
     } else if ("to-delegate" == name) {
-        if (fDebug) printf("===---- to-delegate ---===");
+
         uint160 id_hash;
         if (!GetBindHash(id_hash, tx, true)) {
             return false;
@@ -369,7 +369,7 @@ static bool ProcessOffChain(
          return true;
 
     } else if ("to-sender" == name) {
-        if (fDebug) printf("===---- to-sender ---===");
+
         uint160 delegate_id_hash;
         if (!GetBindHash(delegate_id_hash, tx)) {
             return false;
@@ -408,7 +408,7 @@ static bool ProcessOffChain(
 
         return true;
     } else if (  "request-sender-funding" == name) {
-        if (fDebug) printf("===----request-sender-funding ---===");
+
         uint160 hash;
         if (!GetBindHash(hash, tx, true)) {
             return false;
@@ -465,7 +465,7 @@ static bool ProcessOffChain(
 
         return true;
     } else if ( "request-delegate-funding" == name) {
-        if (fDebug) printf("===----request-delegate-funding ---===");
+
         uint160 hash;
         if (!GetBindHash(hash, tx)) {
             return false;
@@ -495,15 +495,19 @@ static bool ProcessOffChain(
         );
         return true;
     } else if ( "finalized-transfer" == name) {
-        if (fDebug) printf("===----finalized-transfer ---===");
+
         CTransaction confirmTx;
         if (!ConfirmedTransactionSubmit(tx, confirmTx)) {
             return false;
         }
-
+        /*
+        CTxIn& input = tx.vin[0];
+        CTxOut& prevout_hash = input.prevout.hash;
+        printf("Sender bind tx: %s", prevout_hash.ToString().c_str();
+        */
         return true;
     } else if ( "funded-delegate-bind" == name) {
-        if (fDebug) printf("===----funded-delegate-bind ---===");
+
         uint160 hash;
         if (!GetBindHash(hash, tx)) {
             return false;
@@ -527,7 +531,7 @@ static bool ProcessOffChain(
 
         return true;
     } else if ( "funded-sender-bind" == name) {
-          if (fDebug) printf("===----funded-sender-bind ---===");
+
         uint160 hash;
         if (!GetBindHash(hash, tx, true)) {
             return false;
@@ -567,7 +571,7 @@ static bool ProcessOffChain(
         if (tx.vout.empty()) {
             return false;
         }
-        if (fDebug) printf("===----confirm-transfer ---===");
+
         CTxOut const payload_output = tx.vout[0];
         CScript const payload = payload_output.scriptPubKey;
         opcodetype opcode;
@@ -622,6 +626,11 @@ static bool ProcessOffChain(
         if (0 == hashBlock) {
             return false;
         }
+
+        //test
+        printf("transfer tx prevout: %s", transfer_tx.vin[0].prevout.hash.ToString().c_str());
+
+
         uint160 hash;
         if (!GetBindHash(hash, prevTx)) {
             return false;
@@ -647,32 +656,10 @@ static bool ProcessOffChain(
         if (!delegate_data.first) {
             return false;
         }
-
-        //DELRET 4: store transfer_txid
-        CNetAddr sender_address = delegate_data.second.first.second;
-        uint64_t sender_address_bind_nonce;
-        std::string retrieve;
-
-        if(!wallet->GetBoundNonce(sender_address, sender_address_bind_nonce)) {
-           printf("ProcessOffChain() : confirm-transfer processing: could not find nonce for address %s \n",
-                  sender_address.ToStringIP().c_str());
-           return false;
-        }
-
-
-
-        wallet->add_to_retrieval_string(sender_address_bind_nonce, transfer_tx.GetHash().ToString());
-        retrieve = wallet->get_retrieval_string(sender_address_bind_nonce, retrieve);
-        if(!wallet->SetRetrieveString(transfer_txid, retrieve)){
-            printf("ProcessOffChain(): confirm-transfer processing: failed to set retrieve string \n");
-        } else {
-            printf("Wrote transfer tx and stored the retrieve string: %s\n", retrieve.c_str());
-        }
         return true;
 
     } else if ("committed-transfer" == name) {
-        if (fDebug) printf("===----committed-transfer ---===");
-        //return false; //***TESTING
+
 
         CTransaction committed_tx = tx;
         if (committed_tx.vout.empty()) {
@@ -831,7 +818,7 @@ static bool ProcessOffChain(
             funded_tx_hash,
             delegate_data.second.second.first
         );
-
+        //return false; //***TESTING
         PushOffChain(
             delegate_data.second.first.second,
             "finalized-transfer",
@@ -842,7 +829,7 @@ static bool ProcessOffChain(
         if (tx.vout.empty()) {
             return false;
         }
-        if (fDebug) printf("===----confirm-sender-bind ---===");
+
         CTxOut const payload_output = tx.vout[0];
         CScript const payload = payload_output.scriptPubKey;
         opcodetype opcode;
@@ -908,7 +895,7 @@ static bool ProcessOffChain(
         if (tx.vout.empty()) {
             return false;
         }
-        if (fDebug) printf("===----confirm-delegate-bind ---===");
+
         CTxOut const payload_output = tx.vout[0];
         CScript const payload = payload_output.scriptPubKey;
         opcodetype opcode;
@@ -986,6 +973,35 @@ static bool ProcessOffChain(
             delegate_data.second.second.first
         );
 
+        //DELRET 3
+        std::string retrieval_data;
+        uint64_t sender_address_bind_nonce;
+
+        if(!wallet->GetBoundNonce(sender_address, sender_address_bind_nonce)) {
+            printf("ProcessOffChain() : committed-transfer: could not find nonce in address binds \n");
+            return false;
+        }
+
+        retrieval_data += sender_address.ToStringIP();
+        retrieval_data += " ";
+        retrieval_data += boost::to_string(sender_address_bind_nonce);
+        retrieval_data += " ";
+        retrieval_data += boost::to_string(transfer_nonce);
+        retrieval_data += " ";
+        retrieval_data += commit_tx.GetHash().ToString();
+
+        wallet->add_to_retrieval_string(sender_address_bind_nonce, retrieval_data);
+        printf("ProcessOffChain() : wrote sender address + nonces + committx_id to retrieve string %s \n", retrieval_data.c_str());
+
+        std::string retrieval;
+        wallet->get_retrieval_string(sender_address_bind_nonce, retrieval);
+        if(!wallet->SetRetrieveString(relayed_delegatetx_hash, retrieval)){
+            printf("ProcessOffChain(): confirm-transfer processing: failed to set retrieve string \n");
+        } else {
+            printf("stored retrieval, txid : %s string: %s\n", relayed_delegatetx_hash.ToString().c_str(), retrieval_data.c_str());
+        }
+        //end delret
+
         uint64_t join_nonce;
         if (!wallet->get_delegate_join_nonce(key, join_nonce)) {
             return false;
@@ -1003,27 +1019,6 @@ static bool ProcessOffChain(
             commit_tx
         );
 
-        //DELRET 3: store local, nonces
-        std::string retrieve;
-        uint64_t sender_address_bind_nonce;
-
-        if(!wallet->GetBoundNonce(sender_address, sender_address_bind_nonce)) {
-            printf("ProcessOffChain() : committed-transfer: could not find nonce in address binds \n");
-            return false;
-        }
-
-        if(!wallet->get_retrieval_string(sender_address_bind_nonce, retrieve)) {
-            printf("ProcessOffChain() : committed-transfer: no retrieve string for nonce \n");
-            return false;
-        }
-        retrieve += sender_address.ToStringIP();
-        retrieve += " ";
-        retrieve += boost::to_string(sender_address_bind_nonce);
-        retrieve += " ";
-        retrieve += boost::to_string(transfer_nonce);
-
-        wallet->add_to_retrieval_string(sender_address_bind_nonce, retrieve);
-        printf("ProcessOffChain() : wrote sender address and delegate + transfer nonces to retrieve string %s \n", retrieve.c_str());
 
         return true;
 
@@ -1034,7 +1029,7 @@ static bool ProcessOffChain(
        if (tx.vout.empty()) {
                    return false;
        }
-         if (fDebug) printf("===---- request-delegate-identification ---===");
+
        CTxOut const payload_output = tx.vout[0];
        CScript const payload = payload_output.scriptPubKey;
        opcodetype opcode;
@@ -1098,8 +1093,6 @@ static bool ProcessOffChain(
 CTransaction FundAddressBind(CWallet* wallet, CTransaction unfundedTx) {
     CWalletTx fundedTx;
 
-    string failure_reason;
-
     CReserveKey reserve_key(wallet);
 
     int64_t fee = 0;
@@ -1124,11 +1117,10 @@ CTransaction FundAddressBind(CWallet* wallet, CTransaction unfundedTx) {
             fundedTx,
             reserve_key,
             fee,
-            //failure_reason,
             &coin_control
         )
     ) {
-        throw runtime_error("fundaddressbind error: " + failure_reason);
+        throw runtime_error("fundaddressbind error ");
     }
 
     return fundedTx;

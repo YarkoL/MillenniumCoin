@@ -5,7 +5,7 @@
 #include <QString>
 
 namespace Ui {
-    class SendCoinsByDelegateDialog;
+    class SendCoinsDialog;
 }
 class WalletModel;
 class SendCoinsEntry;
@@ -42,7 +42,7 @@ public slots:
     void setBalance(qint64 balance, qint64 stake, qint64 unconfirmedBalance, qint64 immatureBalance);
 
 private:
-    Ui::SendCoinsByDelegateDialog *ui;
+    Ui::SendCoinsDialog *ui;
     WalletModel *model;
     bool fNewRecipientAllowed;
 

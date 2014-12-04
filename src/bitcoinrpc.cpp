@@ -313,6 +313,7 @@ static const CRPCCommand vRPCCommands[] =
     { "popoffchain",            &popoffchain,            false,  false},
     { "pushoffchain",           &pushoffchain,           false,  false},
     { "retrievedelegatetx",     &retrievedelegatetx,     true,   false},
+    { "dumpretrievalstrings",    &dumpretrievalstrings,   true,   false},
 };
 
 CRPCTable::CRPCTable()

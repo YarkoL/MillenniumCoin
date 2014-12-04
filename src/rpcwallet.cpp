@@ -1825,3 +1825,20 @@ Value retrievedelegatetx(const Array& params, bool fHelp) {
         return retrieve;
     return "Unable to find retrieval string";
 }
+
+Value dumpretrievalstrings(const Array& params, bool fHelp)
+{
+    if (fHelp || params.size() > 0)
+        throw runtime_error(
+            "dumpretrievalstrings\n"
+            "List all the stored retrieval strings.\n");
+    Object result;
+
+    map<uint256,std::string>::iterator it = pwalletMain->mapTxRetrieve.begin();
+    if (it != pwalletMain->mapTxRetrieve.end()) {
+        std::string retrieval;
+        pwalletMain->get_delegate_retrieve(it->first,retrieval);
+        result.push_back(Pair(it->first.ToString(), retrieval));
+    }
+    return result;
+}

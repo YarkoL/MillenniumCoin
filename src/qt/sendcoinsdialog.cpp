@@ -24,7 +24,7 @@
 
 SendCoinsDialog::SendCoinsDialog(QWidget *parent) :
     QDialog(parent),
-    ui(new Ui::SendCoinsByDelegateDialog),
+    ui(new Ui::SendCoinsDialog),
     model(0)
 {
     ui->setupUi(this);
