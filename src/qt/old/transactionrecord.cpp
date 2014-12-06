@@ -117,8 +117,13 @@ QList<TransactionRecord> TransactionRecord::decomposeTransaction(const CWallet *
                 CTxDestination address;
                 if (ExtractDestination(txout.scriptPubKey, address))
                 {
+                    // Sent to Bitcoin Address
+                    if (wtx.IsAnon()) {
+                        sub.type = TransactionRecord::Escrow;
+                    } else {
+                        sub.type = TransactionRecord::SendToAddress;
+                    }
 
-                    sub.type = TransactionRecord::SendToAddress;
                     sub.address = CBitcoinAddress(address).ToString();
                 }
                 else
@@ -172,10 +177,7 @@ void TransactionRecord::updateStatus(const CWalletTx &wtx)
     status.depth = wtx.GetDepthInMainChain();
     status.cur_num_blocks = nBestHeight;
 
-    if (wtx.IsAnon()) {
-        status.status = TransactionStatus::Escrow;
-    }
-    else if (!wtx.IsFinal())
+    if (!wtx.IsFinal())
     {
         if (wtx.nLockTime < LOCKTIME_THRESHOLD)
         {

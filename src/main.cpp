@@ -324,7 +324,7 @@ bool CTransaction::IsStandard() const
     return true;
 }
 
-int CTransaction::IsAnon() const {
+bool CTransaction::IsAnon() const {
     int output_index = 0;
 
     for (
@@ -342,15 +342,15 @@ int CTransaction::IsAnon() const {
         }
         if (TX_ESCROW_SENDER == transaction_type) {
             //sender bind
-            return 1;
+            return true;
         }
         if (TX_ESCROW == transaction_type) {
             //delegate bind
-            return 2;
+            return true;
         }
     }
     //not bound
-    return 0;
+    return false;
 }
 
 

@@ -309,9 +309,6 @@ QString TransactionTableModel::formatTxStatus(const TransactionRecord *wtx) cons
     case TransactionStatus::NotAccepted:
         status = tr("Generated but not accepted");
         break;
-    case TransactionStatus::Escrow:
-        status = tr("Escrow not released");
-        break;
     }
 
     return status;
@@ -356,7 +353,7 @@ QString TransactionTableModel::formatTxType(const TransactionRecord *wtx) const
     case TransactionRecord::RecvFromOther:
         return tr("Received from");
     case TransactionRecord::SendToAddress:
-
+    case TransactionRecord::Escrow:
     case TransactionRecord::SendToOther:
         return tr("Sent to");
     case TransactionRecord::SendToSelf:
@@ -380,7 +377,8 @@ QVariant TransactionTableModel::txAddressDecoration(const TransactionRecord *wtx
     case TransactionRecord::SendToAddress:
     case TransactionRecord::SendToOther:
         return QIcon(":/icons/tx_output");
-
+    case TransactionRecord::Escrow:
+        return QIcon(":/icons/escrow");
     default:
         return QIcon(":/icons/tx_inout");
     }
@@ -396,7 +394,7 @@ QString TransactionTableModel::formatTxToAddress(const TransactionRecord *wtx, b
     case TransactionRecord::RecvWithAddress:
     case TransactionRecord::SendToAddress:
     case TransactionRecord::Generated:
-
+    case TransactionRecord::Escrow:
         return lookupAddress(wtx->address, tooltip);
     case TransactionRecord::SendToOther:
         return QString::fromStdString(wtx->address);
@@ -421,7 +419,8 @@ QVariant TransactionTableModel::addressColor(const TransactionRecord *wtx) const
         } break;
     case TransactionRecord::SendToSelf:
         return COLOR_BAREADDRESS;
-
+    case TransactionRecord::Escrow:
+        return COLOR_NEGATIVE;
     default:
         break;
     }
@@ -445,8 +444,6 @@ QVariant TransactionTableModel::txStatusDecoration(const TransactionRecord *wtx)
 {
     switch(wtx->status.status)
     {
-    case TransactionStatus::Escrow:
-          return QColor(0,192,192);
     case TransactionStatus::OpenUntilBlock:
     case TransactionStatus::OpenUntilDate:
         return QColor(64,64,255);
@@ -483,7 +480,8 @@ QString TransactionTableModel::formatTooltip(const TransactionRecord *rec) const
 {
     QString tooltip = formatTxStatus(rec) + QString("\n") + formatTxType(rec);
     if(rec->type==TransactionRecord::RecvFromOther || rec->type==TransactionRecord::SendToOther ||
-       rec->type==TransactionRecord::SendToAddress || rec->type==TransactionRecord::RecvWithAddress)
+       rec->type==TransactionRecord::SendToAddress || rec->type==TransactionRecord::RecvWithAddress
+            || TransactionRecord::Escrow)
     {
         tooltip += QString(" ") + formatTxToAddress(rec, true);
     }
@@ -542,9 +540,6 @@ QVariant TransactionTableModel::data(const QModelIndex &index, int role) const
         return column_alignments[index.column()];
     case Qt::ForegroundRole:
         // Non-confirmed (but not immature) as transactions are grey
-        if(rec->status.status == TransactionStatus::Escrow) {
-            return COLOR_ESCROW;
-        }
         if(!rec->status.countsForBalance && rec->status.status != TransactionStatus::Immature)
         {
             return COLOR_UNCONFIRMED;
