@@ -10,12 +10,15 @@ TransactionDescDialog::TransactionDescDialog(const QModelIndex &idx, QWidget *pa
     ui(new Ui::TransactionDescDialog)
 {
     rec = static_cast<TransactionRecord*>(idx.internalPointer());
+
     ui->setupUi(this);
 
     QString desc = idx.data(TransactionTableModel::LongDescriptionRole).toString();
+    int status = idx.data(TransactionTableModel::StatusRole).toInt();
+
     ui->detailText->setHtml(desc);
 
-    //ui->retrieveButton->setEnabled(false);
+    ui->retrieveButton->setEnabled(status == TransactionStatus::Escrow);
     connect(ui->retrieveButton, SIGNAL(clicked()), this, SLOT(retrieveClicked()));
 }
 
@@ -28,5 +31,5 @@ void TransactionDescDialog::retrieveClicked()
 {
 
     QString hash = QString(rec->hash.ToString().c_str());
-     ui->detailText->setText(hash);
+    ui->detailText->setText(hash);
 }

@@ -27,12 +27,12 @@ private:
     Ui::TransactionDescDialog *ui;
     TransactionRecord *rec;
 
+
 signals:
 
 
 private slots:
     void retrieveClicked();
-   // void enableRetrieveButton(const QString &txt);
 };
 
 #endif // TRANSACTIONDESCDIALOG_H

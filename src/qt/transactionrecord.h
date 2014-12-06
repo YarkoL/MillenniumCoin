@@ -98,6 +98,7 @@ public:
     /** Decompose CWallet transaction to model transaction records.
      */
     static bool showTransaction(const CWalletTx &wtx);
+
     static QList<TransactionRecord> decomposeTransaction(const CWallet *wallet, const CWalletTx &wtx);
 
     /** @name Immutable transaction attributes
@@ -122,6 +123,7 @@ public:
     /** Update status from core wallet tx.
      */
     void updateStatus(const CWalletTx &wtx);
+    //void updateStatus(const CWallet *wallet);
 
     /** Return whether a status update is needed.
      */

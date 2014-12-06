@@ -18,6 +18,8 @@ bool TransactionRecord::showTransaction(const CWalletTx &wtx)
     return true;
 }
 
+
+
 /*
  * Decompose CWallet transaction to model transaction records.
  */
@@ -238,7 +240,18 @@ void TransactionRecord::updateStatus(const CWalletTx &wtx)
         }
     }
 }
+/*
+void TransactionRecord::updateStatus(const CWallet *wallet)
+{
+    LOCK(wallet->cs_wallet);
+    std::map<uint256, CWalletTx>::iterator mi = wallet->mapWallet.find(rec->hash);
 
+    if(mi != wallet->mapWallet.end())
+    {
+        rec->updateStatus(mi->second);
+    }
+}
+*/
 bool TransactionRecord::statusUpdateNeeded()
 {
     return status.cur_num_blocks != nBestHeight;
