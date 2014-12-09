@@ -49,7 +49,10 @@ public:
         /** Formatted amount, without brackets when unconfirmed */
         FormattedAmountRole,
         /** Transaction status (TransactionRecord::Status) */
-        StatusRole
+        StatusRole,
+        /** Get hash*/
+        Hash
+
     };
 
     int rowCount(const QModelIndex &parent) const;

@@ -1,10 +1,8 @@
 #ifndef TRANSACTIONDESCDIALOG_H
 #define TRANSACTIONDESCDIALOG_H
 
-//http://www.informit.com/articles/article.aspx?p=1405224
 #include <QDialog>
 #include "transactionrecord.h"
-
 
 namespace Ui {
     class TransactionDescDialog;
@@ -23,16 +21,15 @@ public:
     explicit TransactionDescDialog(const QModelIndex &idx, QWidget *parent = 0);
     ~TransactionDescDialog();
 
+
 private:
     Ui::TransactionDescDialog *ui;
-    TransactionRecord *rec;
-
+    uint256 tx_id;
 
 signals:
 
-
-private slots:
-    void retrieveClicked();
+public slots:
+    void retrieveTxHandler();
 };
 
 #endif // TRANSACTIONDESCDIALOG_H

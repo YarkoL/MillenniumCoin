@@ -186,7 +186,6 @@ public:
                 {
                     LOCK(wallet->cs_wallet);
                     std::map<uint256, CWalletTx>::iterator mi = wallet->mapWallet.find(rec->hash);
-
                     if(mi != wallet->mapWallet.end())
                     {
                         rec->updateStatus(mi->second);
@@ -578,6 +577,8 @@ QVariant TransactionTableModel::data(const QModelIndex &index, int role) const
         return formatTxAmount(rec, false);
     case StatusRole:
         return rec->status.status;
+    case Hash:
+        return QString::fromStdString(rec->hash.ToString());
     }
     return QVariant();
 }

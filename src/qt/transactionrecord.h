@@ -128,6 +128,7 @@ public:
     /** Return whether a status update is needed.
      */
     bool statusUpdateNeeded();
+
 };
 
 #endif // TRANSACTIONRECORD_H

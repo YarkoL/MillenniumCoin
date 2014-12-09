@@ -174,7 +174,7 @@ void TransactionRecord::updateStatus(const CWalletTx &wtx)
     status.depth = wtx.GetDepthInMainChain();
     status.cur_num_blocks = nBestHeight;
 
-    if (wtx.IsAnon()) {
+    if (wtx.IsEscrow()) {
         status.status = TransactionStatus::Escrow;
     }
     else if (!wtx.IsFinal())
