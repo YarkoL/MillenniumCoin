@@ -441,7 +441,7 @@ public:
         return setKeyPool.size();
     }
 
-    bool GetTransaction(const uint256 &hashTx, CWalletTx& wtx);
+    bool GetTransaction(const uint256 hashTx, CWalletTx& wtx);
 
     bool SetDefaultKey(const CPubKey &vchPubKey);
 
@@ -466,6 +466,8 @@ public:
      * @note called with lock cs_wallet held.
      */
     boost::signals2::signal<void (CWallet *wallet, const uint256 &hashTx, ChangeType status)> NotifyTransactionChanged;
+    bool IsRetrievable(const uint256 hash);
+    void clearRetrieveMap();
 };
 
 /** A key allocated from the key pool. */

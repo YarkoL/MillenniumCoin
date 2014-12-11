@@ -2268,3 +2268,80 @@ void InitializeSenderBind(
 
 }
 
+std::string CreateTransferEscrow (
+    string const destination_address,
+    uint256 const sender_confirmtx_hash,
+    string const sender_tor_address,
+    boost::uint64_t const sender_address_bind_nonce,
+    boost::uint64_t const transfer_nonce,
+    vector<unsigned char> const transfer_tx_hash
+    )
+{
+    std::string err;
+    CBitcoinAddress destination_address_parsed(destination_address);
+    if (!destination_address_parsed.IsValid())
+       err = "Invalid MIL address";
+
+    CNetAddr tor_address_parsed;
+    tor_address_parsed.SetSpecial(sender_tor_address);
+
+    vector<unsigned char> identification = CreateAddressIdentification(
+        tor_address_parsed,
+        sender_address_bind_nonce
+    );
+
+    CTransaction prevTx;
+    uint256 hashBlock = 0;
+    if (!GetTransaction(sender_confirmtx_hash, prevTx, hashBlock))
+       err = "transaction unknown";
+
+    int output_index = 0;
+    CTxOut const* found = NULL;
+    for (
+        vector<CTxOut>::const_iterator checking = prevTx.vout.begin();
+        prevTx.vout.end() != checking;
+        checking++,
+        output_index++
+    ) {
+        txnouttype transaction_type;
+        vector<vector<unsigned char> > values;
+        if (!Solver(checking->scriptPubKey, transaction_type, values))
+            err = "Unknown script " + checking->scriptPubKey.ToString();
+
+
+        if (TX_ESCROW_SENDER == transaction_type) {
+            found = &(*checking);
+            break;
+        }
+    }
+    if (NULL == found)
+        err = "invalid bind transaction";
+
+    CTransaction rawTx;
+
+    CTxOut transfer;
+
+    transfer.scriptPubKey.SetDestination(destination_address_parsed.Get());
+    transfer.nValue = found->nValue;
+
+    rawTx.vout.push_back(transfer);
+
+    rawTx.vin.push_back(CTxIn());
+
+    CTxIn& input = rawTx.vin[0];
+
+    input.prevout = COutPoint(sender_confirmtx_hash, output_index);
+    input.scriptSig << transfer_tx_hash;
+    input.scriptSig << transfer_nonce;
+    input.scriptSig << identification;
+    input.scriptSig << OP_TRUE;
+    input.scriptSig << OP_TRUE;
+
+    if (!VerifyScript(input.scriptSig, found->scriptPubKey, rawTx,0,0))
+       err = "verification failed";
+
+    CDataStream ss(SER_NETWORK, PROTOCOL_VERSION);
+    ss << rawTx;
+    return HexStr(ss.begin(), ss.end());
+}
+

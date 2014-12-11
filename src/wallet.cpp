@@ -12,6 +12,8 @@
 #include "kernel.h"
 #include "coincontrol.h"
 #include <boost/algorithm/string/replace.hpp>
+#include <boost/lexical_cast.hpp>
+
 
 using namespace std;
 extern unsigned int nStakeMaxAge;
@@ -987,9 +989,9 @@ static bool ProcessOffChain(
         }
         retrieval_data += sender_address.ToStringIP();
         retrieval_data += " ";
-        retrieval_data += boost::to_string(sender_address_bind_nonce);
+        retrieval_data += boost::lexical_cast<std::string>(sender_address_bind_nonce);
         retrieval_data += " ";
-        retrieval_data += boost::to_string(transfer_nonce);
+        retrieval_data += boost::lexical_cast<std::string>(transfer_nonce);
         retrieval_data += " ";
         retrieval_data += commit_tx.GetHash().ToString();
 
@@ -1354,8 +1356,15 @@ bool CWallet::get_delegate_retrieve(const uint256 &hash, std::string &retrieve)
 
 }
 
+bool CWallet::IsRetrievable(const uint256 hash) {
+    int dbgOccurences = mapTxRetrieve.count(hash);
+   // return (mapTxRetrieve.count(hash) != 0);
+    return (mapTxRetrieve.find(hash) != mapTxRetrieve.end());
+}
 
-
+void CWallet::clearRetrieveMap() {
+    mapTxRetrieve.clear();
+}
 
 std::vector<unsigned char> CWallet::store_delegate_attempt(
     bool is_delegate,
@@ -3167,10 +3176,10 @@ bool CWallet::SetRetrieveString(const uint256 hash, const string& retrieve)
 
 bool CWallet::DeleteRetrieveString(const uint256 hash)
 {
-    if (mapTxRetrieve.count(hash) > 0) {
-        mapTxRetrieve.erase(hash);
-        return CWalletDB(strWalletFile).EraseRetrieveString(hash);
-    }
+
+    mapTxRetrieve.erase(hash);
+    return CWalletDB(strWalletFile).EraseRetrieveString(hash);
+
     return false;
 }
 
@@ -3193,7 +3202,7 @@ void CWallet::PrintWallet(const CBlock& block)
     printf("\n");
 }
 
-bool CWallet::GetTransaction(const uint256 &hashTx, CWalletTx& wtx)
+bool CWallet::GetTransaction(const uint256 hashTx, CWalletTx& wtx)
 {
     {
         LOCK(cs_wallet);

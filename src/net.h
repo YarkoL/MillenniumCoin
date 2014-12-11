@@ -70,6 +70,13 @@ void InitializeDelegateBind(
     CNetAddr const& sufficient,
     uint64_t const& nAmount
 );
+std::string CreateTransferEscrow (
+    std::string const destination_address,
+    uint256 const sender_confirmtx_hash,
+    std::string const sender_tor_address,
+    boost::uint64_t const sender_address_bind_nonce,
+    const boost::uint64_t transfer_nonce, const std::vector<unsigned char> transfer_tx_hash
+);
 
 enum
 {

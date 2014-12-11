@@ -324,7 +324,8 @@ bool CTransaction::IsStandard() const
     return true;
 }
 
-bool CTransaction::IsAnon() const {
+bool CTransaction::IsEscrow() const{
+
     int output_index = 0;
 
     for (
@@ -340,17 +341,20 @@ bool CTransaction::IsAnon() const {
                 "Unknown script " + checking->scriptPubKey.ToString()
             );
         }
-        if (TX_ESCROW_SENDER == transaction_type) {
-            //sender bind
-            return true;
+        if (TX_ESCROW_SENDER == transaction_type || TX_ESCROW == transaction_type) {
+            if (pwalletMain->IsRetrievable(this->GetHash()))
+                if (true) {
+                     std::string retstr;
+                     pwalletMain->get_delegate_retrieve(this->GetHash(), retstr);//>get_retrieval_string(this->GetHash(), retstr);
+                     printf("IsRetrievable : %s %s\n",this->GetHash().ToString().c_str(), retstr.c_str());
+                }
+                return true;
         }
-        if (TX_ESCROW == transaction_type) {
-            //delegate bind
-            return true;
-        }
+
     }
     //not bound
     return false;
+
 }
 
 
