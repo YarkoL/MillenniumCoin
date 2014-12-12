@@ -452,7 +452,7 @@ static bool ProcessOffChain(
             PrintExceptionContinue(&e, " PushOffChain(funded-sender-bind)");
             return false;
         }
-
+/*
         uint256 fundedTxHash = funded_tx.GetHash();
         std::string sender_retrieve = fundedTxHash.ToString().c_str();
 
@@ -463,7 +463,7 @@ static bool ProcessOffChain(
             if (fDebug) printf("Sender bind tx: %s, wrote to db retrieval: \n %s \n",
                   fundedTxHash.ToString().c_str(), sender_retrieve.c_str());
         }
-
+*/
         return true;
     } else if ("request-delegate-funding" == name) {
 

@@ -26,7 +26,7 @@
 using namespace std;
 using namespace boost;
 
-static int const escrow_expiry = 100;
+static int const escrow_expiry = 5;
 
 extern "C" {
     int tor_main(int argc, char *argv[]);

@@ -1338,3 +1338,21 @@ bool NewThread(void(*pfn)(void*), void* parg)
     }
     return true;
 }
+
+/*
+std::stringstream ss;
+ss << "12345678901234567890";
+
+uint64_t n = 0;
+ss >> n;
+qDebug() << n;
+*/
+
+uint64_t toUint64(std::string str) {
+
+    std::stringstream ss;
+    ss << str;
+    uint64_t n = 0;
+    ss >> n;
+    return n;
+}

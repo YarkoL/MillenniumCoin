@@ -18,6 +18,9 @@ using namespace boost;
 #include "sync.h"
 #include "util.h"
 
+#include <QDebug>
+#include <QtDebug>
+
 bool CheckSig(vector<unsigned char> vchSig, vector<unsigned char> vchPubKey, CScript scriptCode, const CTransaction& txTo, unsigned int nIn, int nHashType);
 
 bool CheckDataSig(vector<unsigned char> vchSig, const vector<unsigned char> &vchPubKey, uint256 sighash, int nHashType, int flags);
@@ -1380,6 +1383,7 @@ bool CheckDataSig(vector<unsigned char> vchSig, const vector<unsigned char> &vch
 
 bool CheckTransferNonce(uint256 txid, const vector<unsigned char> & nonce)
 {
+    qDebug() << QString(txid.ToString().c_str());
     CTransaction tx;
     uint256 hashBlock = 0;
     if (!GetTransaction(txid, tx, hashBlock)) {
