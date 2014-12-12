@@ -11,8 +11,6 @@
 #include "init.h"
 #include "ui_interface.h"
 #include "kernel.h"
-#include <QDebug>
-#include <QtDebug>
 
 
 #include <boost/algorithm/string/replace.hpp>
@@ -607,7 +605,7 @@ bool CTxMemPool::accept(CTxDB& txdb, CTransaction &tx, bool fCheckInputs,
 
     // Do we already have it?
     uint256 hash = tx.GetHash();
-    qDebug() << QString(hash.ToString().c_str());
+
     {
         LOCK(cs);
         if (mapTx.count(hash) != 0)
