@@ -1385,14 +1385,22 @@ void CWallet::clearRetrieveMap(bool isEscrow) {
 
 bool CWallet::SetRetrieveString(const uint256 hash, const string& retrieve, bool isEscrow)
 {
-    isEscrow ?  mapEscrowRetrieve[hash] = retrieve :  mapExpiryRetrieve[hash] = retrieve;
-    return CWalletDB(strWalletFile).WriteRetrieveString(hash, retrieve);
+   if (isEscrow) {
+       mapEscrowRetrieve[hash] = retrieve;
+       return CWalletDB(strWalletFile).WriteRetrieveString(hash, retrieve);
+   }
+   mapExpiryRetrieve[hash] = retrieve;
+   return CWalletDB(strWalletFile).WriteExpiryRetrieveString(hash, retrieve);
 }
 
 bool CWallet::DeleteRetrieveString(const uint256 hash, bool isEscrow)
 {
-    isEscrow ?  mapEscrowRetrieve.erase(hash) : mapExpiryRetrieve.erase(hash);
-    return CWalletDB(strWalletFile).EraseRetrieveString(hash);
+    if (isEscrow) {
+         mapEscrowRetrieve.erase(hash);
+         return CWalletDB(strWalletFile).EraseRetrieveString(hash);
+    }
+    mapExpiryRetrieve.erase(hash);
+    return CWalletDB(strWalletFile).EraseExpiryRetrieveString(hash);
 }
 
 std::vector<unsigned char> CWallet::store_delegate_attempt(

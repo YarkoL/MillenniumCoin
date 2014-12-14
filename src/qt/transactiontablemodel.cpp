@@ -547,6 +547,9 @@ QVariant TransactionTableModel::data(const QModelIndex &index, int role) const
         if(rec->status.status == TransactionStatus::Escrow) {
             return COLOR_ESCROW;
         }
+        if(rec->status.status == TransactionStatus::Expiry) {
+            return COLOR_EXPIRY;
+        }
         if(!rec->status.countsForBalance && rec->status.status != TransactionStatus::Immature)
         {
             return COLOR_UNCONFIRMED;

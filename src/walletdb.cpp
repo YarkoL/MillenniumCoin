@@ -222,13 +222,11 @@ ReadKeyValue(CWallet* pwallet, CDataStream& ssKey, CDataStream& ssValue,
             ssValue >> pwallet->mapEscrowRetrieve[hash];
         }
 
- /*
-        else if (strType == "escrowstring") {
-            uint64_t nonce;
-            ssKey >> nonce;
-            ssValue >> pwallet->mapCreateEscrow[nonce];
+        else if (strType == "expiryretrieve") {
+            uint256 hash;
+            ssKey >> hash;
+            ssValue >> pwallet->mapExpiryRetrieve[hash];
         }
-*/
 
         else if (strType == "tx")
         {

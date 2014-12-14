@@ -196,17 +196,17 @@ public:
         return Erase(std::make_pair(std::string("retrieve"), hash));
     }
 
-/*
-    bool WriteCreateEscrowString(const uint64_t nonce, const std::string& strRetrieve)
+    bool WriteExpiryRetrieveString(const uint256 hash, const std::string& strRetrieve)
     {
-        return Write(std::make_pair(std::string("escrowstring"), nonce), strRetrieve);
+        return Write(std::make_pair(std::string("expiryretrieve"), hash), strRetrieve);
     }
 
-    bool EraseCreateEscrowString(const uint64_t nonce)
+    bool EraseExpiryRetrieveString(const uint256 hash)
     {
-        return Erase(std::make_pair(std::string("escrowstring"), nonce));
+        return Erase(std::make_pair(std::string("expiryretrieve"), hash));
     }
-*/
+
+
     bool ReadAccount(const std::string& strAccount, CAccount& account);
     bool WriteAccount(const std::string& strAccount, const CAccount& account);
 private:

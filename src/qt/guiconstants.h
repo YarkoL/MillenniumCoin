@@ -20,6 +20,8 @@ static const int STATUSBAR_ICONSIZE = 16;
 /* Transaction list -- bare address (without label) */
 #define COLOR_BAREADDRESS QColor(140, 140, 140)
 #define COLOR_ESCROW QColor(0,140,140)
+#define COLOR_EXPIRY QColor(140,0,140)
+
 
 /* Tooltips longer than this (in characters) are converted into rich text,
    so that they can be word-wrapped.
