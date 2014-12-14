@@ -219,7 +219,7 @@ ReadKeyValue(CWallet* pwallet, CDataStream& ssKey, CDataStream& ssValue,
         else if (strType == "retrieve") {
             uint256 hash;
             ssKey >> hash;
-            ssValue >> pwallet->mapTxRetrieve[hash];
+            ssValue >> pwallet->mapEscrowRetrieve[hash];
         }
 
  /*

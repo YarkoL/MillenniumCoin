@@ -27,7 +27,7 @@ TransactionDescDialog::TransactionDescDialog(const QModelIndex &idx, QWidget *pa
 
     ui->detailText->setHtml(desc);
 
-    ui->retrieveButton->setEnabled(status == TransactionStatus::Escrow);
+    ui->retrieveButton->setEnabled(status == TransactionStatus::Escrow || status == TransactionStatus::Expiry );
     connect(ui->retrieveButton, SIGNAL(clicked()), this, SLOT(retrieveTxHandler()));
 }
 
@@ -41,7 +41,7 @@ void TransactionDescDialog::retrieveTxHandler()
     std::string retrieve;
     QString err;
 
-    if (pwalletMain->get_delegate_retrieve(tx_id, retrieve)) {
+    if (pwalletMain->get_retrieval_string(tx_id, retrieve)) {
 
         qDebug() << QString(retrieve.c_str());
 

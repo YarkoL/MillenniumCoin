@@ -31,7 +31,8 @@ public:
         Immature,           /**< Mined but waiting for maturity */
         MaturesWarning,     /**< Transaction will likely not mature because no nodes have confirmed */
         NotAccepted,         /**< Mined but not accepted */
-        Escrow
+        Escrow,
+        Expiry
     };
 
 

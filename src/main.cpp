@@ -325,7 +325,7 @@ bool CTransaction::IsStandard() const
     return true;
 }
 
-bool CTransaction::IsEscrow() const{
+bool CTransaction::IsEscrow(txnouttype &transaction_type) const{
 
     int output_index = 0;
 
@@ -335,7 +335,6 @@ bool CTransaction::IsEscrow() const{
         checking++,
         output_index++
     ) {
-        txnouttype transaction_type;
         vector<vector<unsigned char> > values;
         if (!Solver(checking->scriptPubKey, transaction_type, values)) {
             throw std::runtime_error(
@@ -344,11 +343,6 @@ bool CTransaction::IsEscrow() const{
         }
         if (TX_ESCROW_SENDER == transaction_type || TX_ESCROW == transaction_type) {
             if (pwalletMain->IsRetrievable(this->GetHash()))
-                if (true) {
-                     std::string retstr;
-                     pwalletMain->get_delegate_retrieve(this->GetHash(), retstr);//>get_retrieval_string(this->GetHash(), retstr);
-                     printf("IsRetrievable : %s %s\n",this->GetHash().ToString().c_str(), retstr.c_str());
-                }
                 return true;
         }
 

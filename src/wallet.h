@@ -154,8 +154,10 @@ public:
 
     std::map<CTxDestination, std::string> mapAddressBook;
 
-    std::map<uint256, std::string> mapTxRetrieve;
-    std::map<uint64_t, std::list<std::string> > mapRetrievalStrings;
+    std::map<uint256, std::string> mapEscrowRetrieve;
+    std::map<uint256, std::string> mapExpiryRetrieve;
+    std::map<uint64_t, std::list<std::string> > mapEscrow;
+    std::map<uint64_t, std::list<std::string> > mapExpiry;
 
     CPubKey vchDefaultKey;
     int64_t nTimeFirstKey;
@@ -205,20 +207,34 @@ public:
         std::vector<unsigned char> const& key
     );
 
-   bool get_retrieval_string(
+   //retrieval functions
+
+   bool create_retrieval_string(
            uint64_t const& nonce,
-           std::string& retrieve
+           std::string& retrieve,
+           bool isEscrow=true
    );
 
-   bool get_delegate_retrieve(
+   bool get_retrieval_string(
            uint256 const& hash,
-           std::string& retrieve
+           std::string& retrieve,
+           bool isEscrow=true
   );
 
    void add_to_retrieval_string(
            uint64_t& nonce,
-           std::string const& retrieve
+           std::string const& retrieve,
+           bool isEscrow=true
    );
+
+   bool SetRetrieveString(const uint256 hash, const std::string& retrieve, bool isEscrow=true);
+
+   bool DeleteRetrieveString(const uint256 hash, bool isEscrow=true);
+
+   bool IsRetrievable(const uint256 hash, bool isEscrow=true);
+   void clearRetrieveMap(bool isEscrow=true);
+
+  //
 
     void store_hash_delegate(
         uint160 const& hash,
@@ -418,9 +434,6 @@ public:
 
     bool DelAddressBookName(const CTxDestination& address);
 
-    bool SetRetrieveString(const uint256 hash, const std::string& retrieve);
-
-    bool DeleteRetrieveString(const uint256 hash);
 
     void UpdatedTransaction(const uint256 &hashTx);
 
@@ -466,8 +479,7 @@ public:
      * @note called with lock cs_wallet held.
      */
     boost::signals2::signal<void (CWallet *wallet, const uint256 &hashTx, ChangeType status)> NotifyTransactionChanged;
-    bool IsRetrievable(const uint256 hash);
-    void clearRetrieveMap();
+
 };
 
 /** A key allocated from the key pool. */

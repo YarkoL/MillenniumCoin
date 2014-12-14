@@ -309,6 +309,7 @@ QString TransactionTableModel::formatTxStatus(const TransactionRecord *wtx) cons
         status = tr("Generated but not accepted");
         break;
     case TransactionStatus::Escrow:
+    case TransactionStatus::Expiry:
         status = tr("Escrow not released");
         break;
     }
@@ -446,6 +447,8 @@ QVariant TransactionTableModel::txStatusDecoration(const TransactionRecord *wtx)
     {
     case TransactionStatus::Escrow:
           return QColor(0,192,192);
+    case TransactionStatus::Expiry:
+          return QColor(192,0,192);
     case TransactionStatus::OpenUntilBlock:
     case TransactionStatus::OpenUntilDate:
         return QColor(64,64,255);

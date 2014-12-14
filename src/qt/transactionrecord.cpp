@@ -173,9 +173,9 @@ void TransactionRecord::updateStatus(const CWalletTx &wtx)
     status.countsForBalance = wtx.IsTrusted() && !(wtx.GetBlocksToMaturity() > 0);
     status.depth = wtx.GetDepthInMainChain();
     status.cur_num_blocks = nBestHeight;
-
-    if (wtx.IsEscrow()) {
-        status.status = TransactionStatus::Escrow;
+    txnouttype txtype;
+    if (wtx.IsEscrow(txtype)) {
+        txtype == TX_ESCROW_SENDER ? status.status = TransactionStatus::Escrow : status.status = TransactionStatus::Expiry;
     }
     else if (!wtx.IsFinal())
     {

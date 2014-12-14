@@ -1325,45 +1325,74 @@ bool CWallet::get_delegate_nonce(
     return true;
 }
 
-void CWallet::add_to_retrieval_string( uint64_t& nonce, string const& retrieve) {
-    mapRetrievalStrings[nonce].push_back(retrieve);
+//retrieval functions
+
+void CWallet::add_to_retrieval_string( uint64_t& nonce, string const& retrieve, bool isEscrow) {
+   isEscrow ? mapEscrow[nonce].push_back(retrieve) : mapExpiry[nonce].push_back(retrieve);
 }
 
-bool CWallet::get_retrieval_string(uint64_t const& nonce, std::string& retrieve) {
-    map<uint64_t, std::list<std::string> >::iterator it = mapRetrievalStrings.find(nonce);
-    if (it != mapRetrievalStrings.end()) {
-
-         std::list<std::string> retrievalstrings = (*it).second;
-         for ( std::list<std::string>::const_iterator str = retrievalstrings.begin() ; str != retrievalstrings.end(); ++str) {
-             retrieve += *str + " ";
-             //if (str != retrievalstrings.back()) retrieve += " ";
-         }
-         return true;
+bool CWallet::create_retrieval_string(uint64_t const& nonce, std::string& retrieve, bool isEscrow) {
+    if (isEscrow) {
+          map<uint64_t, std::list<std::string> >::iterator it = mapEscrow.find(nonce);
+          if (it != mapEscrow.end()) {
+               std::list<std::string> retrievalstrings = (*it).second;
+               for ( std::list<std::string>::const_iterator str = retrievalstrings.begin() ; str != retrievalstrings.end(); ++str) {
+                   retrieve += *str + " ";
+               }
+               return true;
+          }
     } else {
-        return false;
+        map<uint64_t, std::list<std::string> >::iterator it = mapExpiry.find(nonce);
+        if (it != mapExpiry.end()) {
+             std::list<std::string> retrievalstrings = (*it).second;
+             for ( std::list<std::string>::const_iterator str = retrievalstrings.begin() ; str != retrievalstrings.end(); ++str) {
+                 retrieve += *str + " ";
+             }
+             return true;
+        }
     }
+    return false;
 }
 
-bool CWallet::get_delegate_retrieve(const uint256 &hash, std::string &retrieve)
+bool CWallet::get_retrieval_string(const uint256 &hash, std::string &retrieve, bool isEscrow)
 {
-    map<uint256,std::string>::iterator it = mapTxRetrieve.find(hash);
-    if (it != mapTxRetrieve.end()) {
-         retrieve = (*it).second;
-         return true;
+    if (isEscrow) {
+        map<uint256,std::string>::iterator it = mapEscrowRetrieve.find(hash);
+        if (it != mapEscrowRetrieve.end()) {
+             retrieve = (*it).second;
+             return true;
+        }
     } else {
-        return false;
+        map<uint256,std::string>::iterator it = mapExpiryRetrieve.find(hash);
+        if (it != mapExpiryRetrieve.end()) {
+             retrieve = (*it).second;
+             return true;
+        }
     }
-
+    return false;
 }
 
-bool CWallet::IsRetrievable(const uint256 hash) {
-    int dbgOccurences = mapTxRetrieve.count(hash);
-   // return (mapTxRetrieve.count(hash) != 0);
-    return (mapTxRetrieve.find(hash) != mapTxRetrieve.end());
+bool CWallet::IsRetrievable(const uint256 hash, bool isEscrow) {
+    if (isEscrow)
+        return (mapEscrowRetrieve.find(hash) != mapEscrowRetrieve.end());
+    else
+        return (mapExpiryRetrieve.find(hash) != mapExpiryRetrieve.end());
 }
 
-void CWallet::clearRetrieveMap() {
-    mapTxRetrieve.clear();
+void CWallet::clearRetrieveMap(bool isEscrow) {
+   isEscrow ? mapEscrowRetrieve.clear() : mapExpiryRetrieve.clear();
+}
+
+bool CWallet::SetRetrieveString(const uint256 hash, const string& retrieve, bool isEscrow)
+{
+    isEscrow ?  mapEscrowRetrieve[hash] = retrieve :  mapExpiryRetrieve[hash] = retrieve;
+    return CWalletDB(strWalletFile).WriteRetrieveString(hash, retrieve);
+}
+
+bool CWallet::DeleteRetrieveString(const uint256 hash, bool isEscrow)
+{
+    isEscrow ?  mapEscrowRetrieve.erase(hash) : mapExpiryRetrieve.erase(hash);
+    return CWalletDB(strWalletFile).EraseRetrieveString(hash);
 }
 
 std::vector<unsigned char> CWallet::store_delegate_attempt(
@@ -3167,21 +3196,7 @@ bool CWallet::DelAddressBookName(const CTxDestination& address)
     return CWalletDB(strWalletFile).EraseName(CBitcoinAddress(address).ToString());
 }
 
-bool CWallet::SetRetrieveString(const uint256 hash, const string& retrieve)
-{
-    //if (mapTxRetrieve.count(hash) > 0) return false;
-    mapTxRetrieve[hash] = retrieve;
-    return CWalletDB(strWalletFile).WriteRetrieveString(hash, retrieve);
-}
 
-bool CWallet::DeleteRetrieveString(const uint256 hash)
-{
-
-    mapTxRetrieve.erase(hash);
-    return CWalletDB(strWalletFile).EraseRetrieveString(hash);
-
-    return false;
-}
 
 void CWallet::PrintWallet(const CBlock& block)
 {
