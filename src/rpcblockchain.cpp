@@ -181,7 +181,7 @@ Value getdifficulty(const Array& params, bool fHelp)
     obj.push_back(Pair("search-interval",      (int)nLastCoinStakeSearchInterval));
     return obj;
 }
-
+/*
 Value setdelegatefee(const Array& params, bool fHelp)
 {
     if (fHelp || params.size() < 1 || params.size() > 1)
@@ -197,7 +197,7 @@ Value setdelegatefee(const Array& params, bool fHelp)
     nDelegateFee = nAmount;
     return true;
 }
-
+*/
 Value settxfee(const Array& params, bool fHelp)
 {
     if (fHelp || params.size() < 1 || params.size() > 1 || AmountFromValue(params[0]) < MIN_TX_FEE)

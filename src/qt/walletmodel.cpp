@@ -292,11 +292,13 @@ WalletModel::SendCoinsReturn WalletModel::sendCoinsByDelegate(
         return AmountExceedsBalance;
     }
 
-    if((total + nTransactionFee + nDelegateFee) > nBalance)
+    int64_t delegateFee = wallet->DelegateFee(total);
+
+    if((total + nTransactionFee + delegateFee) > nBalance)
     {
         return SendCoinsReturn(
             AmountWithFeeExceedsBalance,
-            nTransactionFee + nDelegateFee
+            nTransactionFee + delegateFee
         );
     }
 

@@ -2240,11 +2240,13 @@ void InitializeSenderBind(
 
     recovery_address.Set(recovery_key.GetID());
 
+    int64_t delegateFee = pwalletMain->DelegateFee(nAmount);
+
     CTransaction const rawTx = CreateSenderBind(
         local,
         sender_address_bind_nonce,
         nAmount,
-        nDelegateFee,
+        delegateFee,
         nBestHeight + escrow_expiry,
         recovery_address
     );

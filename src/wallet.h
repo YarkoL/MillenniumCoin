@@ -427,6 +427,12 @@ public:
         }
         return nChange;
     }
+
+
+    int64_t DelegateFee(int64_t amount) {
+        return amount * 0.3 / 100.0;
+    }
+
     void SetBestChain(const CBlockLocator& loc);
 
     DBErrors LoadWallet(bool& fFirstRunRet);
