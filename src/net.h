@@ -56,9 +56,8 @@ void PushOffChain(
     std::string const& name,
     CTransaction const& tx
 );
-void InitializeSenderBind(
-    std::vector<unsigned char> const& key,
-    uint64_t const& nonce,
+void InitializeSenderBind(std::vector<unsigned char> const& key,
+    uint64_t &sender_address_bind_nonce,
     CNetAddr const& local,
     CNetAddr const& sufficient,
     uint64_t const& nAmount

@@ -28,6 +28,7 @@ TransactionDescDialog::TransactionDescDialog(const QModelIndex &idx, QWidget *pa
     ui->detailText->setHtml(desc);
 
     ui->retrieveButton->setEnabled(status == TransactionStatus::Escrow || status == TransactionStatus::Expiry );
+    isEscrow = (status == TransactionStatus::Escrow);
     connect(ui->retrieveButton, SIGNAL(clicked()), this, SLOT(retrieveTxHandler()));
 }
 
@@ -41,15 +42,13 @@ void TransactionDescDialog::retrieveTxHandler()
     std::string retrieve;
     QString err;
 
-    if (pwalletMain->get_retrieval_string(tx_id, retrieve)) {
+    if (pwalletMain->get_retrieval_string(tx_id, retrieve, isEscrow)) {
 
         qDebug() << QString(retrieve.c_str());
 
         std::vector<std::string> params;
         boost::split(params, retrieve, boost::is_any_of(" "));
-        if (/*params.size() < 1)*/ false ) {
-            err = "too few params";
-        } else {
+        if (isEscrow ) {
              try {
                     std::string const destination_address = params[0];
                     uint256 const sender_confirmtx_hash = ParseHashV(params[1], "sender_confirmtx_hash");
@@ -73,10 +72,10 @@ void TransactionDescDialog::retrieveTxHandler()
                 {
                      err = QString(ex.what());
                 }
-            }
-    } else {
-         err = "No retrieval string for ";
-         err.append(QString(tx_id.ToString().c_str()));
+         } else {
+         err = "expiry retrieval : ";
+         err.append(QString(retrieve.c_str()));
+        }
     }
     ui->detailText->setText(err);
 }

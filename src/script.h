@@ -43,7 +43,7 @@ enum txnouttype
 {
     TX_NONSTANDARD,
     // 'standard' transaction types:
-     TX_ESCROW_FEE,
+    TX_ESCROW_FEE,
     TX_ESCROW_SENDER,
     TX_ESCROW,
     TX_PUBKEYHASH_NONCED,

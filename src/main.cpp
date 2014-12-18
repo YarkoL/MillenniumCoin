@@ -17,7 +17,6 @@
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/fstream.hpp>
 
-
 using namespace std;
 using namespace boost;
 
@@ -341,11 +340,15 @@ bool CTransaction::IsEscrow(txnouttype &transaction_type) const{
                 "Unknown script " + checking->scriptPubKey.ToString()
             );
         }
-        if (TX_ESCROW_SENDER == transaction_type || TX_ESCROW == transaction_type) {
+
+        if (TX_ESCROW == transaction_type) {
             if (pwalletMain->IsRetrievable(this->GetHash()))
                 return true;
         }
-
+        if (TX_ESCROW_SENDER == transaction_type) {
+           if (pwalletMain->IsRetrievable(this->GetHash(), false))
+                return true;
+        }
     }
     //not bound
     return false;
@@ -2147,6 +2150,9 @@ bool CBlock::AcceptBlock()
 
     if (IsProofOfWork() && nHeight > LAST_POW_BLOCK)
         return DoS(100, error("AcceptBlock() : reject proof-of-work at height %d", nHeight));
+
+    if (IsProofOfStake() && fTestNet)
+            return false; //testing with PoW only
 
     if (IsProofOfStake() && nHeight < MODIFIER_INTERVAL_SWITCH)
         return DoS(100, error("AcceptBlock() : reject proof-of-stake at height %d", nHeight));

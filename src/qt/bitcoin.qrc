@@ -94,4 +94,7 @@
     <file alias="zh_CN">locale/bitcoin_zh_CN.qm</file>
     <file alias="zh_TW">locale/bitcoin_zh_TW.qm</file>
   </qresource>
+  <qresource>
+    <file alias="stylesheet">res/darkorange.qss</file>
+  </qresource>
 </RCC>

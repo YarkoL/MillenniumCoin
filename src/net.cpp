@@ -2222,7 +2222,7 @@ void  InitializeDelegateBind(
 
 void InitializeSenderBind(
     std::vector<unsigned char> const& my_key,
-    uint64_t const& received_delegate_nonce,
+    uint64_t& sender_address_bind_nonce,
     CNetAddr const& local,
     CNetAddr const& sufficient,
     uint64_t const& nAmount
@@ -2242,7 +2242,7 @@ void InitializeSenderBind(
 
     CTransaction const rawTx = CreateSenderBind(
         local,
-        received_delegate_nonce,
+        sender_address_bind_nonce,
         nAmount,
         nDelegateFee,
         nBestHeight + escrow_expiry,
@@ -2259,6 +2259,8 @@ void InitializeSenderBind(
         id_hash,
         my_key
     );
+    pwalletMain->add_to_retrieval_string(sender_address_bind_nonce, recovery_address.ToString(), false);
+    if (fDebug) printf("InitializeSenderBind() : wrote recovery address to retrieve string %s \n", recovery_address.ToString().c_str());
 
     try {
         PushOffChain(sufficient, "to-delegate", rawTx);

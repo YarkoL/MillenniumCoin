@@ -221,8 +221,9 @@ public:
            bool isEscrow=true
   );
 
-   void add_to_retrieval_string(
-           uint64_t& nonce,
+   void erase_retrieval_string(const uint64_t &nonce, bool isEscrow);
+
+   void add_to_retrieval_string(uint64_t &nonce,
            std::string const& retrieve,
            bool isEscrow=true
    );
@@ -479,6 +480,7 @@ public:
      * @note called with lock cs_wallet held.
      */
     boost::signals2::signal<void (CWallet *wallet, const uint256 &hashTx, ChangeType status)> NotifyTransactionChanged;
+
 
 };
 

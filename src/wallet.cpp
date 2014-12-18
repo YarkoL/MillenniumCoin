@@ -242,6 +242,7 @@ static bool ProcessOffChain(
                 return false;
             }
             memcpy(&sender_address_bind_nonce, data.data(), sizeof(sender_address_bind_nonce));
+            //SENDRET1 inside
             InitializeSenderBind(
                 my_key,
                 sender_address_bind_nonce,
@@ -253,6 +254,8 @@ static bool ProcessOffChain(
                 sender_address_bind_nonce,
                 my_key
             );
+
+
             return true;
         } else {
             return false;
@@ -442,6 +445,32 @@ static bool ProcessOffChain(
             return false;
         }
         CTransaction const funded_tx = FundAddressBind(wallet, tx);
+        std::string funded_txid = funded_tx.GetHash().ToString();
+        //SENDRET2
+        uint64_t nonce;
+        if (!wallet->get_delegate_nonce(nonce, key)) {
+            printf("Could not get nonce while processing request-sender-funding");
+        }
+        wallet->add_to_retrieval_string(nonce, funded_txid,false);
+        if (fDebug) {
+            printf("Added to sender retrieval string at nonce %lu funded tx id %s \n",
+                   nonce,  funded_txid.c_str());
+        }
+        std::string retrieve;
+        if (!wallet->create_retrieval_string(nonce, retrieve, false)) {
+           printf("Could not get retrieve string for nonce %lu while processing confirm-sender-bind\n",
+           nonce);
+        } else {
+           if (wallet->SetRetrieveString(funded_tx.GetHash(), retrieve, false)) {
+            //we no longer need the retrieve string in the expirymap
+            wallet->erase_retrieval_string(nonce, false);
+            if (fDebug) printf("Wrote retrieve string for txid %s while processing confirm-sender-bind\n with contents: %s\n",
+                                 funded_txid.c_str(), retrieve.c_str());
+            } else {
+             printf("Could not set retrieve string for txid %s while processing confirm-sender-bind\n",
+                     funded_txid.c_str());
+            }
+        }
         try {
             PushOffChain(
                 delegate_data.second.first.second,
@@ -628,7 +657,7 @@ static bool ProcessOffChain(
 
         //as transfer has been finalized, we no longer need to retrieve
         if (!wallet->DeleteRetrieveString(relayed_delegate_hash)) {
-            printf("could not delete retrieve string for hash :", relayed_delegate_hash.ToString().c_str());
+            printf("could not delete retrieve string for hash %s:", relayed_delegate_hash.ToString().c_str());
         }
 
         uint160 hash;
@@ -731,6 +760,13 @@ static bool ProcessOffChain(
         CTransaction confirmTx;
         if (!ConfirmedTransactionSubmit(committed_tx, confirmTx)) {
             return false;
+        }
+
+        //SENDRET-delete
+        if (!wallet->DeleteRetrieveString(committed_tx.GetHash())){
+            printf("Could not delete retrieve string for tx id %s \n",
+                   committed_tx.GetHash().ToString().c_str());
+
         }
 
         PushOffChain(delegate_address, "confirm-transfer", confirmTx);
@@ -850,6 +886,7 @@ static bool ProcessOffChain(
         } else {
             return false;
         }
+
         CTransaction prevTx;
         uint256 hashBlock = 0;
         if (!GetTransaction(relayed_sender_tx_hash, prevTx, hashBlock)) {
@@ -891,10 +928,6 @@ static bool ProcessOffChain(
         }
         wallet->set_sender_bind(key, relayed_sender_tx_hash);
 
-        //as transfer has been committed, we no longer need to retrieve
-        if (!wallet->DeleteRetrieveString(relayed_sender_tx_hash)) {
-            printf("could not delete retrieve string for hash :", relayed_sender_tx_hash.ToString().c_str());
-        }
 
         return true;
     } else if ("confirm-delegate-bind" == name) {
@@ -1327,7 +1360,7 @@ bool CWallet::get_delegate_nonce(
 
 //retrieval functions
 
-void CWallet::add_to_retrieval_string( uint64_t& nonce, string const& retrieve, bool isEscrow) {
+void CWallet::add_to_retrieval_string(uint64_t& nonce, string const& retrieve, bool isEscrow) {
    isEscrow ? mapEscrow[nonce].push_back(retrieve) : mapExpiry[nonce].push_back(retrieve);
 }
 
@@ -1339,6 +1372,10 @@ bool CWallet::create_retrieval_string(uint64_t const& nonce, std::string& retrie
                for ( std::list<std::string>::const_iterator str = retrievalstrings.begin() ; str != retrievalstrings.end(); ++str) {
                    retrieve += *str + " ";
                }
+               /* //write to db
+               mapEscrowRetrieve[hash] = retrieve;
+               return CWalletDB(strWalletFile).WriteRetrieveString(hash, retrieve);
+               */
                return true;
           }
     } else {
@@ -1348,6 +1385,10 @@ bool CWallet::create_retrieval_string(uint64_t const& nonce, std::string& retrie
              for ( std::list<std::string>::const_iterator str = retrievalstrings.begin() ; str != retrievalstrings.end(); ++str) {
                  retrieve += *str + " ";
              }
+             /*
+             mapExpiryRetrieve[hash] = retrieve;
+             return CWalletDB(strWalletFile).WriteExpiryRetrieveString(hash, retrieve);
+             */
              return true;
         }
     }
@@ -1370,6 +1411,10 @@ bool CWallet::get_retrieval_string(const uint256 &hash, std::string &retrieve, b
         }
     }
     return false;
+}
+
+void CWallet::erase_retrieval_string(uint64_t const& nonce, bool isEscrow) {
+    isEscrow? mapEscrow.erase(nonce) : mapExpiry.erase(nonce);
 }
 
 bool CWallet::IsRetrievable(const uint256 hash, bool isEscrow) {

@@ -427,13 +427,14 @@ bool AppInit2()
 
     // ********************************************************* Step 3: parameter-to-internal-flags
 
-    fDebug = GetBoolArg("-debug");
+    fDebug = GetBoolArg("-debug") || fTestNet;
 
     // -debug implies fDebug*
     if (fDebug)
         fDebugNet = true;
     else
         fDebugNet = GetBoolArg("-debugnet");
+
 
     bitdb.SetDetach(GetBoolArg("-detachdb", false));
 
