@@ -11,6 +11,7 @@
 #include "addrman.h"
 #include "ui_interface.h"
 #include "stdlib.h"
+#include "txdb-leveldb.h"
 
 #ifdef WIN32
 #include <string.h>
@@ -1154,8 +1155,8 @@ void MapPort()
 // The first name is used as information source for addrman.
 // The second name should resolve to a list of seed addresses.
 static const char *strDNSSeed[][2] = {
-    	{"108.61.198.32", "108.61.198.32"},
-	
+        {"108.61.198.32", "108.61.198.32"},
+
 };
 
 void ThreadDNSAddressSeed(void* parg)
@@ -2272,7 +2273,7 @@ void InitializeSenderBind(
 
 }
 
-std::string CreateTransferEscrow (
+string CreateTransferEscrow (
     string const destination_address,
     uint256 const sender_confirmtx_hash,
     string const sender_tor_address,
@@ -2281,11 +2282,12 @@ std::string CreateTransferEscrow (
     vector<unsigned char> const transfer_tx_hash
     )
 {
-    std::string err;
+    string err;
     CBitcoinAddress destination_address_parsed(destination_address);
-    if (!destination_address_parsed.IsValid())
+    if (!destination_address_parsed.IsValid()) {
        err = "Invalid MIL address";
-
+       return err;
+    }
     CNetAddr tor_address_parsed;
     tor_address_parsed.SetSpecial(sender_tor_address);
 
@@ -2296,9 +2298,10 @@ std::string CreateTransferEscrow (
 
     CTransaction prevTx;
     uint256 hashBlock = 0;
-    if (!GetTransaction(sender_confirmtx_hash, prevTx, hashBlock))
+    if (!GetTransaction(sender_confirmtx_hash, prevTx, hashBlock)) {
        err = "transaction unknown";
-
+       return err;
+    }
     int output_index = 0;
     CTxOut const* found = NULL;
     for (
@@ -2309,17 +2312,20 @@ std::string CreateTransferEscrow (
     ) {
         txnouttype transaction_type;
         vector<vector<unsigned char> > values;
-        if (!Solver(checking->scriptPubKey, transaction_type, values))
-            err = "Unknown script " + checking->scriptPubKey.ToString();
-
+        if (!Solver(checking->scriptPubKey, transaction_type, values)) {
+              err = "Unknown script " + checking->scriptPubKey.ToString();
+              return err;
+        }
 
         if (TX_ESCROW_SENDER == transaction_type) {
             found = &(*checking);
             break;
         }
     }
-    if (NULL == found)
+    if (NULL == found) {
         err = "invalid bind transaction";
+        return err;
+    }
 
     CTransaction rawTx;
 
@@ -2341,11 +2347,139 @@ std::string CreateTransferEscrow (
     input.scriptSig << OP_TRUE;
     input.scriptSig << OP_TRUE;
 
-    if (!VerifyScript(input.scriptSig, found->scriptPubKey, rawTx,0,0))
-       err = "verification failed";
+    if (!VerifyScript(input.scriptSig, found->scriptPubKey, rawTx,0,0)) {
+        err = "verification failed";
+        return err;
+    }
 
     CDataStream ss(SER_NETWORK, PROTOCOL_VERSION);
     ss << rawTx;
     return HexStr(ss.begin(), ss.end());
 }
 
+string CreateTransferExpiry(string const destination_address, uint256 const bind_tx)
+{
+    string err;
+    CBitcoinAddress destination_address_parsed(destination_address);
+    if (!destination_address_parsed.IsValid()) {
+        err = "Invalid MIL address";
+        return err;
+    }
+
+    CTransaction prevTx;
+    uint256 hashBlock = 0;
+    if (!GetTransaction(bind_tx, prevTx, hashBlock)) {
+        err = "transaction unknown";
+        return err;
+    }
+
+    CTransaction rawTx;
+
+    uint64_t value = 0;
+    int output_index = 0;
+
+    for (
+        vector<CTxOut>::const_iterator checking = prevTx.vout.begin();
+        prevTx.vout.end() != checking;
+        checking++,
+        output_index++
+    ) {
+        txnouttype transaction_type;
+        vector<vector<unsigned char> > values;
+        if (!Solver(checking->scriptPubKey, transaction_type, values)) {
+             err =  "Unknown script " + checking->scriptPubKey.ToString();
+        }
+        if (
+            (
+                TX_ESCROW == transaction_type
+            ) || (
+                TX_ESCROW_FEE == transaction_type
+            ) || (
+                TX_ESCROW_SENDER == transaction_type
+            )
+        ) {
+            value += checking->nValue;
+            CTxIn claiming;
+            claiming.prevout = COutPoint(bind_tx, output_index);
+            int const expected = ScriptSigArgsExpected(transaction_type, values);
+            for (
+                int filling = 1;
+                expected > filling;
+                filling++
+            ) {
+                claiming.scriptSig << OP_TRUE;
+            }
+            claiming.scriptSig << OP_FALSE;
+
+            rawTx.vin.push_back(claiming);
+        }
+    }
+
+    CTxOut transfer;
+
+    transfer.scriptPubKey.SetDestination(destination_address_parsed.Get());
+    transfer.nValue = value;
+
+    rawTx.vout.push_back(transfer);
+
+    CDataStream ss(SER_NETWORK, PROTOCOL_VERSION);
+    ss << rawTx;
+    return HexStr(ss.begin(), ss.end());
+}
+
+
+
+string SendRetrieveTx(string retrieve, int depth)
+{
+    string err;
+    int countdown = escrow_expiry - depth;
+    if (countdown > 0) {
+        stringstream ss;
+        ss << countdown;
+        err = string("Retrievable after " + ss.str() + " blocks");
+        return err;
+    }
+    // parse hex string from parameter
+    vector<unsigned char> txData(ParseHex(retrieve));
+    CDataStream ssData(txData, SER_NETWORK, PROTOCOL_VERSION);
+    CTransaction tx;
+
+    // deserialize binary data stream
+    try {
+        ssData >> tx;
+    }
+    catch (std::exception &e) {
+        err = "TX decode failed ";
+        return err;
+    }
+    uint256 hashTx = tx.GetHash();
+
+    // See if the transaction is already in a block
+    // or in the memory pool:
+    CTransaction existingTx;
+    uint256 hashBlock = 0;
+    if (GetTransaction(hashTx, existingTx, hashBlock))
+    {
+        if (hashBlock != 0) {
+             err = "transaction already in block ";
+             return err;
+        }
+
+        // Not in block, but already in the memory pool; will drop
+        // through to re-relay it.
+    }
+    else
+    {
+        // push to local node
+        CTxDB txdb("r");
+        if (!tx.AcceptToMemoryPool(txdb)) {
+            err = "TX rejected";
+            return err;
+        }
+
+        SyncWithWallets(tx, NULL, true);
+    }
+    RelayTransaction(tx, hashTx);
+
+    return hashTx.GetHex();
+}

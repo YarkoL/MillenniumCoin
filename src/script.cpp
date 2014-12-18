@@ -1432,7 +1432,7 @@ bool Solver(const CScript& scriptPubKey, txnouttype& typeRet, vector<vector<unsi
         // Sender provides N pubkeys, receivers provides M signatures
         mTemplates.insert(make_pair(TX_MULTISIG, CScript() << OP_SMALLINTEGER << OP_PUBKEYS << OP_SMALLINTEGER << OP_CHECKMULTISIG));
         
-        //NUDSend
+        //Escrow transactions
         mTemplates.insert(make_pair(TX_ESCROW, CScript() << OP_IF << OP_PUBKEYHASH << OP_DUP << OP_PUBKEY << OP_PUBKEY << OP_CHECKDATASIG << OP_VERIFY << OP_SWAP << OP_HASH160 << OP_EQUAL << OP_VERIFY << OP_PUBKEYHASH << OP_TOALTSTACK << OP_DUP << OP_HASH160 << OP_PUBKEYHASH << OP_EQUALVERIFY << OP_CHECKSIG << OP_ELSE << OP_NUMERIC << OP_CHECKEXPIRY << OP_ENDIF));
 
         mTemplates.insert(make_pair(TX_ESCROW_SENDER, CScript() << OP_IF << OP_IF << OP_PUBKEYHASH << OP_DUP << OP_PUBKEY << OP_PUBKEY << OP_CHECKDATASIG << OP_VERIFY << OP_SWAP << OP_HASH160 << OP_EQUAL << OP_VERIFY << OP_CHECKTRANSFERNONCE << OP_ELSE << OP_PUBKEYHASH << OP_TOALTSTACK << OP_DUP << OP_HASH160 << OP_PUBKEYHASH << OP_EQUALVERIFY << OP_CHECKSIG << OP_ENDIF << OP_ELSE << OP_NUMERIC << OP_CHECKEXPIRY << OP_ENDIF));

@@ -77,6 +77,11 @@ std::string CreateTransferEscrow (
     const boost::uint64_t transfer_nonce, const std::vector<unsigned char> transfer_tx_hash
 );
 
+std::string SendRetrieveTx(std::string retrieve, int depth);
+
+std::string CreateTransferExpiry(std::string const destination_address, uint256 const bind_tx);
+
+
 enum
 {
     LOCAL_NONE,   // unknown
