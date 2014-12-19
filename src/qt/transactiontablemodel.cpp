@@ -585,6 +585,8 @@ QVariant TransactionTableModel::data(const QModelIndex &index, int role) const
         return rec->status.status;
     case Hash:
         return QString::fromStdString(rec->hash.ToString());
+    case Depth:
+        return QVariant(rec->status.depth);
     }
     return QVariant();
 }

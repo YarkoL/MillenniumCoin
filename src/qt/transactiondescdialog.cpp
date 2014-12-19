@@ -26,9 +26,10 @@ TransactionDescDialog::TransactionDescDialog(const QModelIndex &idx, QWidget *pa
     tx_id = uint256(tx_id_str);
 
     ui->detailText->setHtml(desc);
-
     ui->retrieveButton->setEnabled(status == TransactionStatus::Escrow || status == TransactionStatus::Expiry );
+
     isEscrow = (status == TransactionStatus::Escrow);
+    depth = idx.data(TransactionTableModel::Depth).toInt();
     connect(ui->retrieveButton, SIGNAL(clicked()), this, SLOT(retrieveTxHandler()));
 }
 
@@ -65,7 +66,8 @@ void TransactionDescDialog::retrieveTxHandler()
                              sender_tor_address,
                              sender_address_bind_nonce,
                              transfer_nonce,
-                             transfer_tx_hash
+                             transfer_tx_hash,
+                             depth
                              );
                  err = QString(ret.c_str());
             }
@@ -77,7 +79,7 @@ void TransactionDescDialog::retrieveTxHandler()
 
             std::string const destination_address = params[0];
             uint256 const bind_txid = ParseHashV(params[1], "bind_txid");
-            ret = CreateTransferExpiry(destination_address, bind_txid);
+            ret = CreateTransferExpiry(destination_address, bind_txid, depth);
             err = QString(ret.c_str());
         }
     }

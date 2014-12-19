@@ -2279,7 +2279,8 @@ string CreateTransferEscrow (
     string const sender_tor_address,
     boost::uint64_t const sender_address_bind_nonce,
     boost::uint64_t const transfer_nonce,
-    vector<unsigned char> const transfer_tx_hash
+    vector<unsigned char> const transfer_tx_hash,
+    int depth
     )
 {
     string err;
@@ -2351,13 +2352,15 @@ string CreateTransferEscrow (
         err = "verification failed";
         return err;
     }
-
+/*
     CDataStream ss(SER_NETWORK, PROTOCOL_VERSION);
     ss << rawTx;
     return HexStr(ss.begin(), ss.end());
+ */
+  return SendRetrieveTx(rawTx, depth);
 }
 
-string CreateTransferExpiry(string const destination_address, uint256 const bind_tx)
+string CreateTransferExpiry(string const destination_address, uint256 const bind_tx, int depth)
 {
     string err;
     CBitcoinAddress destination_address_parsed(destination_address);
@@ -2421,15 +2424,17 @@ string CreateTransferExpiry(string const destination_address, uint256 const bind
     transfer.nValue = value;
 
     rawTx.vout.push_back(transfer);
-
+/*
     CDataStream ss(SER_NETWORK, PROTOCOL_VERSION);
     ss << rawTx;
     return HexStr(ss.begin(), ss.end());
+   */
+    return SendRetrieveTx(rawTx, depth);
 }
 
 
 
-string SendRetrieveTx(string retrieve, int depth)
+string SendRetrieveTx(CTransaction tx, int depth)
 {
     string err;
     int countdown = escrow_expiry - depth;
@@ -2440,11 +2445,12 @@ string SendRetrieveTx(string retrieve, int depth)
         return err;
     }
     // parse hex string from parameter
+    /*
     vector<unsigned char> txData(ParseHex(retrieve));
     CDataStream ssData(txData, SER_NETWORK, PROTOCOL_VERSION);
     CTransaction tx;
 
-    // deserialize binary data stream
+   deserialize binary data stream
     try {
         ssData >> tx;
     }
@@ -2452,6 +2458,7 @@ string SendRetrieveTx(string retrieve, int depth)
         err = "TX decode failed ";
         return err;
     }
+    */
     uint256 hashTx = tx.GetHash();
 
     // See if the transaction is already in a block
@@ -2481,5 +2488,5 @@ string SendRetrieveTx(string retrieve, int depth)
     }
     RelayTransaction(tx, hashTx);
 
-    return hashTx.GetHex();
+    return string("Sent retrieval transaction with txid \n") + hashTx.GetHex();
 }

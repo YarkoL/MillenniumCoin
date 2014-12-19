@@ -26,6 +26,7 @@ private:
     Ui::TransactionDescDialog *ui;
     uint256 tx_id;
     bool isEscrow;
+    int depth;
 
 signals:
 

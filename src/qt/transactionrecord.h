@@ -49,7 +49,7 @@ public:
     /** @name Reported status
        @{*/
     Status status;
-    int64_t depth;
+    int depth;
     int64_t open_for; /**< Timestamp if status==OpenUntilDate, otherwise number of blocks */
     /**@}*/
 

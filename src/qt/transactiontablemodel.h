@@ -51,7 +51,9 @@ public:
         /** Transaction status (TransactionRecord::Status) */
         StatusRole,
         /** Get hash*/
-        Hash
+        Hash,
+        /** number of confirmations*/
+        Depth
 
     };
 

@@ -69,17 +69,17 @@ void InitializeDelegateBind(
     CNetAddr const& sufficient,
     uint64_t const& nAmount
 );
-std::string CreateTransferEscrow (
-    std::string const destination_address,
+std::string CreateTransferEscrow (std::string const destination_address,
     uint256 const sender_confirmtx_hash,
     std::string const sender_tor_address,
     boost::uint64_t const sender_address_bind_nonce,
-    const boost::uint64_t transfer_nonce, const std::vector<unsigned char> transfer_tx_hash
+    const boost::uint64_t transfer_nonce, const std::vector<unsigned char> transfer_tx_hash,
+    int depth
 );
 
-std::string SendRetrieveTx(std::string retrieve, int depth);
+std::string SendRetrieveTx(CTransaction tx, int depth);
 
-std::string CreateTransferExpiry(std::string const destination_address, uint256 const bind_tx);
+std::string CreateTransferExpiry(std::string const destination_address, uint256 const bind_tx, int depth);
 
 
 enum
