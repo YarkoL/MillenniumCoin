@@ -577,6 +577,12 @@ static bool ProcessOffChain(
         wallet->add_to_retrieval_string(sender_address_bind_nonce, sender_funded_tx_hash.ToString());
         printf("ProcessOffChain() : stored funded_tx_hash to retrieve string %s \n", sender_funded_tx_hash.ToString().c_str());
 
+        std::string retrieval;
+        if(!wallet->SetRetrieveString(sender_funded_tx_hash, retrieval)){
+            printf("ProcessOffChain(): funded-sender-bind processing (delret 2): failed to set retrieve string \n");
+        } else {
+            printf("stored retrieval, txid : %s string: %s\n", sender_funded_tx_hash.ToString().c_str(), retrieval.c_str());
+        }
         return true;
     } else if ("confirm-transfer" == name) {
 
@@ -749,29 +755,7 @@ static bool ProcessOffChain(
             return false;
         }
 
-        //SENDRET-delete
 
-        std::vector<unsigned char> key;
-        uint64_t nonce;
-        if (!wallet->get_join_nonce_delegate(join_nonce, key)) {
-             printf("Could not get key while processing committed-transfer");
-        }
-
-        if (!wallet->get_delegate_nonce(nonce, key)) {
-            printf("Could not get nonce while processing committed-transfer");
-        }
-
-        uint256 hash;
-        if (!wallet->get_hash_from_expiry_map(nonce, hash)) {
-             printf("Could not get tx hash for nonce %lu while processing committed-transfer", nonce);
-        }
-
-        if (!wallet->DeleteRetrieveString(hash, false)){
-            printf("Could not delete retrieve string for tx id %s \n",
-                   hash.ToString().c_str());
-
-        } else if (fDebug) printf("Deleted retrieve string for tx id %s \n prevtx %s  \n tx %s \n",
-                   hash.ToString().c_str());
 
         PushOffChain(delegate_address, "confirm-transfer", confirmTx);
 
@@ -828,12 +812,14 @@ static bool ProcessOffChain(
         if (0 == hashBlock) {
             return false;
         }
-        /*
+
         std::vector<unsigned char> key;
+
         if (!wallet->get_join_nonce_delegate(join_nonce, key)) {
-            return false;
+             printf("Could not get key while processing committed-transfer");
+             return false;
         }
-        */
+
         CKeyID signing_key;
         if (!GetDelegateBindKey(signing_key, prevTx)) {
             return false;
@@ -866,6 +852,28 @@ static bool ProcessOffChain(
             "finalized-transfer",
             finalization_tx
         );
+
+        //SENDRET-delete
+
+       uint64_t nonce;
+
+        if (!wallet->get_delegate_nonce(nonce, key)) {
+            printf("Could not get nonce while processing committed-transfer");
+            return true;
+        }
+
+        uint256 hash;
+        if (!wallet->get_hash_from_expiry_map(nonce, hash)) {
+             printf("Could not get tx hash for nonce %lu while processing committed-transfer", nonce);
+             return true;
+        }
+
+        if (!wallet->DeleteRetrieveString(hash, false)){
+            printf("Could not delete retrieve string for tx id %s \n",
+                   hash.ToString().c_str());
+
+        } else if (fDebug) printf("Deleted retrieve string for tx id %s",
+                   hash.ToString().c_str());
         return true;
     } else if ("confirm-sender-bind" == name ) {
         if (tx.vout.empty()) {
@@ -1044,6 +1052,7 @@ static bool ProcessOffChain(
         } else {
             printf("stored retrieval, txid : %s string: %s\n", relayed_delegatetx_hash.ToString().c_str(), retrieval_data.c_str());
         }
+
         //end delret
 
         uint64_t join_nonce;
