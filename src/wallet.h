@@ -228,6 +228,8 @@ public:
            bool isEscrow=true
    );
 
+   bool get_hash_from_expiry_map(const uint64_t nonce, uint256& hash);
+
    bool SetRetrieveString(const uint256 hash, const std::string& retrieve, bool isEscrow=true);
 
    bool DeleteRetrieveString(const uint256 hash, bool isEscrow=true);

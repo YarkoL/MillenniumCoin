@@ -2424,11 +2424,7 @@ string CreateTransferExpiry(string const destination_address, uint256 const bind
     transfer.nValue = value;
 
     rawTx.vout.push_back(transfer);
-/*
-    CDataStream ss(SER_NETWORK, PROTOCOL_VERSION);
-    ss << rawTx;
-    return HexStr(ss.begin(), ss.end());
-   */
+
     return SendRetrieveTx(rawTx, depth);
 }
 
@@ -2444,21 +2440,7 @@ string SendRetrieveTx(CTransaction tx, int depth)
         err = string("Retrievable after " + ss.str() + " blocks");
         return err;
     }
-    // parse hex string from parameter
-    /*
-    vector<unsigned char> txData(ParseHex(retrieve));
-    CDataStream ssData(txData, SER_NETWORK, PROTOCOL_VERSION);
-    CTransaction tx;
 
-   deserialize binary data stream
-    try {
-        ssData >> tx;
-    }
-    catch (std::exception &e) {
-        err = "TX decode failed ";
-        return err;
-    }
-    */
     uint256 hashTx = tx.GetHash();
 
     // See if the transaction is already in a block

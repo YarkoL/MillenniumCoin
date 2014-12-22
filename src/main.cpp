@@ -256,11 +256,6 @@ unsigned int LimitOrphanTxSize(unsigned int nMaxOrphans)
 }
 
 
-
-
-
-
-
 //////////////////////////////////////////////////////////////////////////////
 //
 // CTransaction and CTxIndex
@@ -342,12 +337,10 @@ bool CTransaction::IsEscrow(txnouttype &transaction_type) const{
         }
 
         if (TX_ESCROW == transaction_type) {
-            if (pwalletMain->IsRetrievable(this->GetHash()))
-                return true;
+            return pwalletMain->IsRetrievable(this->GetHash());
         }
         if (TX_ESCROW_SENDER == transaction_type) {
-           if (pwalletMain->IsRetrievable(this->GetHash(), false))
-                return true;
+            return pwalletMain->IsRetrievable(this->GetHash(), false);
         }
     }
     //not bound
