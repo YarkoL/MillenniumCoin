@@ -2169,7 +2169,7 @@ void PushOffChain(
 
 void  InitializeDelegateBind(
     std::vector<unsigned char> const& delegate_key,
-    uint64_t const& nonce,
+    uint64_t const& delegate_address_bind_nonce,
     CNetAddr const& local,
     CNetAddr const& sender_address,
     uint64_t const& nAmount
@@ -2189,7 +2189,7 @@ void  InitializeDelegateBind(
 
     CTransaction const rawTx = CreateDelegateBind(
         local,
-        nonce,
+        delegate_address_bind_nonce,
         nAmount,
         nBestHeight + escrow_expiry,
         recovery_address
@@ -2204,20 +2204,19 @@ void  InitializeDelegateBind(
         delegate_id_hash,
         delegate_key
     );
-    PushOffChain(sender_address, "to-sender", rawTx);
 
     //store recovery address for retrieval
-
     uint64_t sender_address_bind_nonce;
 
     if(!pwalletMain->GetBoundNonce(sender_address, sender_address_bind_nonce)) {
        printf("InitializeDelegateBind() : could not find nonce for address %s \n",
               sender_address.ToStringIP().c_str());
-       return;
+    } else {
+        pwalletMain->add_to_retrieval_string(sender_address_bind_nonce, recovery_address.ToString());
+        printf("InitializeDelegateBind() : wrote recovery address to retrieve string %s \n", recovery_address.ToString().c_str());
     }
-    pwalletMain->add_to_retrieval_string(sender_address_bind_nonce, recovery_address.ToString());
-    printf("InitializeDelegateBind() : wrote recovery address to retrieve string %s \n", recovery_address.ToString().c_str());
 
+    PushOffChain(sender_address, "to-sender", rawTx);
 }
 
 
