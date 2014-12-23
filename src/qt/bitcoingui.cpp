@@ -62,6 +62,9 @@
 #include <QStyle>
 
 #include <iostream>
+#include <QDebug>
+#include <QtDebug>
+
 
 extern CWallet* pwalletMain;
 extern int64_t nLastCoinStakeSearchInterval;
@@ -104,6 +107,18 @@ BitcoinGUI::BitcoinGUI(QWidget *parent):
 
     // Create the tray icon (or setup the dock icon)
     createTrayIcon();
+
+    QFile styleSheet("/home/jarkko/MillenniumCoin/src/qt/res/darkorange.qss");
+
+    if(!styleSheet.exists()) qDebug() << "Stylesheet does not exist";
+
+    //
+    if (!styleSheet.open(QIODevice::ReadOnly)) {
+       qDebug() << styleSheet.errorString();
+    } else  {
+       qApp->setStyleSheet(styleSheet.readAll());
+    }
+
 
     // Create tabs
     overviewPage = new OverviewPage();
