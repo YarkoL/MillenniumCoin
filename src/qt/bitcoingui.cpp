@@ -108,7 +108,7 @@ BitcoinGUI::BitcoinGUI(QWidget *parent):
     // Create the tray icon (or setup the dock icon)
     createTrayIcon();
 
-    QFile styleSheet("/home/jarkko/MillenniumCoin/src/qt/res/darkorange.qss");
+    QFile styleSheet(":/styles/stylesheet");
 
     if(!styleSheet.exists()) qDebug() << "Stylesheet does not exist";
 

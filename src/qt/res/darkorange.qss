@@ -91,7 +91,7 @@ QTableView
 	border: 2px solid gray;
 	border-radius: 10px;
 	padding: 0 8px;
-	color: rgb(250, 220, 250);
+	color: rgb(250, 250, 250);
 }
 
 QWidget:focus
@@ -102,6 +102,15 @@ QWidget:focus
 QLineEdit
 {
     background-color: QLinearGradient( x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #4d4d4d, stop: 0 #646464, stop: 1 #5d5d5d);
+    padding: 1px;
+    border-style: solid;
+    border: 1px solid #1e1e1e;
+    border-radius: 5;
+}
+
+BitcoinAmountField
+{
+	background-color: QLinearGradient( x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #4d4d4d, stop: 0 #646464, stop: 1 #5d5d5d);
     padding: 1px;
     border-style: solid;
     border: 1px solid #1e1e1e;
