@@ -1008,6 +1008,12 @@ int64_t GetProofOfWorkReward(int64_t nFees)
       nSubsidy = 0 * COIN;
       return nSubsidy + nFees;
     }
+
+    else if (pindexBest->nHeight >= FIRST_NEW_POW_BLOCK)
+    {
+        nSubsidy = 1 * COIN;
+        return nSubsidy + nFees;
+    }
 	
     if (fDebug && GetBoolArg("-printcreation"))
         printf("GetProofOfWorkReward() : create=%s nSubsidy=%"PRId64"\n", FormatMoney(nSubsidy).c_str(), nSubsidy);
@@ -2141,7 +2147,7 @@ bool CBlock::AcceptBlock()
     CBlockIndex* pindexPrev = (*mi).second;
     int nHeight = pindexPrev->nHeight+1;
 
-    if (IsProofOfWork() && nHeight > LAST_POW_BLOCK)
+    if ((IsProofOfWork() && nHeight > LAST_POW_BLOCK) && (IsProofOfWork() && nHeight < FIRST_NEW_POW_BLOCK))
         return DoS(100, error("AcceptBlock() : reject proof-of-work at height %d", nHeight));
 
     if (IsProofOfStake() && fTestNet)
