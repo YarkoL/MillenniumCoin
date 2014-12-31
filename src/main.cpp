@@ -2514,6 +2514,8 @@ bool LoadBlockIndex(bool fAllowNew)
         nCoinbaseMaturity = 1; // test maturity is 1 blocks
     }
 
+    if (fTestPow) bnProofOfWorkLimit = bnProofOfWorkLimitTestNet;
+
 
     //
     // Load block index
