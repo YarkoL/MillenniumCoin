@@ -110,7 +110,7 @@ void CNode::PushGetBlocks(CBlockIndex* pindexBegin, uint256 hashEnd)
 // find 'best' local address for a particular peer
 bool GetLocal(CService& addr, const CNetAddr *paddrPeer)
 {
-    if (fNoListen)
+    if (fNoListen && !addr.IsTor())
         return false;
 
     int nBestScore = -1;
@@ -142,14 +142,7 @@ CAddress GetLocalAddress(const CNetAddr *paddrPeer)
         ret = CAddress(addr);
         ret.nServices = nLocalServices;
         ret.nTime = GetAdjustedTime();
-        if (!ret.IsTor()) {
-        } else if (pwalletMain) {
-            /*
-            int64_t percentage = atoi(mapArgs["-advertisedbalance"].c_str());
-            if (percentage > 100) percentage = 100;
-            double const fraction = percentage/100.0;
-            ret.advertised_balance = (int64_t)(fraction * pwalletMain->GetBalance());
-            */
+        if (ret.IsTor() && pwalletMain) {
             double const fraction = nAdvertisedBalance/100.0;
             ret.advertised_balance = (int64_t)(fraction * pwalletMain->GetBalance());
         }
