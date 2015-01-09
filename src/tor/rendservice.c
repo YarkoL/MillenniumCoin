@@ -30,6 +30,7 @@
 #include "routerset.h"
 #include "millenniumcoin.h"
 
+
 static origin_circuit_t *find_intro_circuit(rend_intro_point_t *intro,
                                             const char *pk_digest);
 static rend_intro_point_t *find_intro_point(origin_circuit_t *circ);
@@ -378,12 +379,9 @@ rend_config_services(const or_options_t *options, int validate_only)
                 rend_service_port_config_t
             )
         );
-        /*testnet*/
-        //coin_port->virtual_port = 35553;
-        //coin_port->real_port = 35553;
-        /*Mainnet*/
-        coin_port->virtual_port = 35552;
-        coin_port->real_port = 35552;
+
+        coin_port->virtual_port = getCoinPort();
+        coin_port->real_port = getCoinPort();
 
         coin_port->real_addr.family = AF_INET;
         tor_inet_aton(

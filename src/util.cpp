@@ -8,6 +8,7 @@
 #include "strlcpy.h"
 #include "version.h"
 #include "ui_interface.h"
+#include "net.h"
 #include <boost/algorithm/string/join.hpp>
 
 // Work around clang compilation problem in Boost 1.46:
@@ -80,6 +81,8 @@ bool fNoListen = false;
 bool fLogTimestamps = false;
 CMedianFilter<int64_t> vTimeOffsets(200,0);
 bool fReopenDebugLog = false;
+
+uint16_t coinport = GetListenPort();
 
 // Init OpenSSL library multithreading support
 static CCriticalSection** ppmutexOpenSSL;

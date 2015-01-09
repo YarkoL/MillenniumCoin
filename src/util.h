@@ -29,6 +29,7 @@
 
 #include "netbase.h" // for AddTimeData
 
+
 // to obtain PRId64 on some old systems
 #define __STDC_FORMAT_MACROS 1
 
@@ -37,6 +38,7 @@
 
 static const int64_t COIN = 100000000;
 static const int64_t CENT = 1000000;
+
 
 #define BEGIN(a)            ((char*)&(a))
 #define END(a)              ((char*)&((&(a))[1]))
@@ -151,6 +153,9 @@ extern bool fTestPow;
 extern bool fNoListen;
 extern bool fLogTimestamps;
 extern bool fReopenDebugLog;
+
+extern uint16_t coinport;
+
 
 void RandAddSeed();
 void RandAddSeedPerfmon();

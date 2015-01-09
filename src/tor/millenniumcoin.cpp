@@ -12,6 +12,11 @@
 #include <string>
 #include <cstring>
 
+int getCoinPort() {
+    return coinport;
+}
+
+
 char const* millenniumcoin_tor_data_directory(
 ) {
     static std::string const retrieved = (

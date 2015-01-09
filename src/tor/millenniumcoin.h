@@ -28,6 +28,8 @@ extern "C" {
     void wait_initialized(
     );
 
+    int getCoinPort();
+
 #ifdef __cplusplus
 }
 #endif

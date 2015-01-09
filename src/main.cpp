@@ -331,9 +331,8 @@ bool CTransaction::IsEscrow(txnouttype &transaction_type) const{
     ) {
         vector<vector<unsigned char> > values;
         if (!Solver(checking->scriptPubKey, transaction_type, values)) {
-            throw std::runtime_error(
-                "Unknown script " + checking->scriptPubKey.ToString()
-            );
+            printf("Unknown script %s", checking->scriptPubKey.ToString().c_str());
+            return false;
         }
 
         if (TX_ESCROW == transaction_type) {
