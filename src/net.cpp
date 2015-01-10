@@ -496,7 +496,7 @@ CNode* ConnectNode(CAddress addrConnect, const char *pszDest, bool verified)
 
     // Connect
     SOCKET hSocket;
-    if (pszDest ? ConnectSocketByName(addrConnect, hSocket, pszDest, GetDefaultPort()) : ConnectSocket(addrConnect, hSocket))
+    if (pszDest ? ConnectSocketByName(addrConnect, hSocket, pszDest, GetListenPort()) : ConnectSocket(addrConnect, hSocket))
     {
         addrman.Attempt(addrConnect);
 
@@ -1192,7 +1192,7 @@ void ThreadDNSAddressSeed2(void* parg)
                     BOOST_FOREACH(CNetAddr& ip, vaddr)
                     {
                         int nOneDay = 24*3600;
-                        CAddress addr = CAddress(CService(ip, GetDefaultPort()));
+                        CAddress addr = CAddress(CService(ip, GetListenPort()));
                         addr.nTime = GetTime() - 3*nOneDay - GetRand(4*nOneDay); // use a random age between 3 and 7 days old
                         vAdd.push_back(addr);
                         found++;
@@ -1384,7 +1384,7 @@ void ThreadOpenConnections2(void* parg)
                 const int64_t nOneWeek = 7*24*60*60;
                 struct in_addr ip;
                 memcpy(&ip, &pnSeed[i], sizeof(ip));
-                CAddress addr(CService(ip, GetDefaultPort()));
+                CAddress addr(CService(ip, GetListenPort()));
                 addr.nTime = GetTime()-GetRand(nOneWeek)-nOneWeek;
                 vAdd.push_back(addr);
             }
@@ -1437,7 +1437,7 @@ void ThreadOpenConnections2(void* parg)
                 continue;
 
             // do not allow non-default ports, unless after 50 invalid addresses selected already
-            if (addr.GetPort() != GetDefaultPort() && nTries < 50)
+            if (addr.GetPort() != GetListenPort() && nTries < 50)
                 continue;
 
             addrConnect = addr;
@@ -1496,7 +1496,7 @@ void ThreadOpenAddedConnections2(void* parg)
     BOOST_FOREACH(string& strAddNode, mapMultiArgs["-addnode"])
     {
         vector<CService> vservNode(0);
-        if(Lookup(strAddNode.c_str(), vservNode, GetDefaultPort(), fNameLookup, 0))
+        if(Lookup(strAddNode.c_str(), vservNode, GetListenPort(), fNameLookup, 0))
         {
             vservAddressesToAdd.push_back(vservNode);
             {
@@ -2148,7 +2148,7 @@ void PushOffChain(
     std::string const& name,
     CTransaction const& tx
 ) {
-    CAddress destination(CService(parsed, GetDefaultPort()));
+    CAddress destination(CService(parsed, GetListenPort()));
 
     CNode* connected = ConnectNode(destination, NULL, true);
 

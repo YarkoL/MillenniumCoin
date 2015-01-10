@@ -15,12 +15,12 @@
 #include <string>
 #include "uint256.h"
 
+
 extern bool fTestNet;
 static inline unsigned short GetDefaultPort(const bool testnet = fTestNet)
 {
     return testnet ? 35553 : 35552;
 }
-
 
 extern unsigned char pchMessageStart[4];
 
