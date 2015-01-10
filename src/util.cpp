@@ -561,6 +561,8 @@ std::string GetArg(const std::string& strArg, const std::string& strDefault)
 
 int64_t GetArg(const std::string& strArg, int64_t nDefault)
 {
+    if (mapArgs.empty()) ReadConfigFile(mapArgs, mapMultiArgs);
+
     if (mapArgs.count(strArg))
         return atoi64(mapArgs[strArg]);
     return nDefault;

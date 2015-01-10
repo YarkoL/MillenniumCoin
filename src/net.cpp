@@ -93,7 +93,8 @@ void AddOneShot(string strDest)
 
 unsigned short GetListenPort()
 {
-    return (unsigned short)(GetArg("-port", GetDefaultPort()));
+    unsigned short ret = GetArg("-port", GetDefaultPort());
+    return (unsigned short)(ret);
 }
 
 void CNode::PushGetBlocks(CBlockIndex* pindexBegin, uint256 hashEnd)
