@@ -1669,15 +1669,22 @@ std::map<CAddress, uint64_t> ListAdvertisedBalances()
 {
     std::map<CAddress, uint64_t> result;
     std::set<CAddress> addresses;
-    for (int run = 0; 0x10 > run; run++) {
 
+    vector<CNode*> vNodesCopy;
+    {
+        LOCK(cs_vNodes);
+        vNodesCopy = vNodes;
+    }
+
+    for (int run = 0; 0x10 > run; run++) {
         std::vector<CAddress> retrieved = addrman.GetAddr();
         for (
             std::vector<CAddress>::const_iterator address = retrieved.begin();
             retrieved.end() != address;
             address++
-        ) {
-            addresses.insert(*address);
+        )
+        {
+                addresses.insert(*address);
         }
     }
 
@@ -1685,15 +1692,20 @@ std::map<CAddress, uint64_t> ListAdvertisedBalances()
         std::set<CAddress>::const_iterator address = addresses.begin();
         addresses.end() != address;
         address++
-    ) {
-        if (IsLocal(*address)) {
+    )
+    {
+        if (IsLocal(*address))
             continue;
-        }
+
         if (0 < address->advertised_balance) {
-            result[*address] = address->advertised_balance;
+            BOOST_FOREACH(CNode* pnode, vNodesCopy) {
+                if (pnode->addrName == address->ToStringIP() /*&& pnode->fSuccessfullyConnected*/) {
+                    result[*address] = address->advertised_balance;
+                    break;
+                }
+            }
         }
     }
-
     return result;
 }
 
