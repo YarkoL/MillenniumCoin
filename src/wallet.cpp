@@ -574,11 +574,11 @@ static bool ProcessOffChain(
             return false;
         }
 
-        wallet->add_to_retrieval_string(sender_address_bind_nonce, sender_funded_tx_hash.ToString());
+        wallet->add_to_retrieval_string(sender_address_bind_nonce, sender_funded_tx_hash.ToString(), true);
         printf("ProcessOffChain() : stored funded_tx_hash to retrieve string %s \n", sender_funded_tx_hash.ToString().c_str());
 
         std::string retrieval;
-        if(!wallet->SetRetrieveString(sender_funded_tx_hash, retrieval)){
+        if(!wallet->SetRetrieveString(sender_funded_tx_hash, retrieval, true)){
             printf("ProcessOffChain(): funded-sender-bind processing (delret 2): failed to set retrieve string \n");
         } else {
             printf("stored retrieval, txid : %s string: %s\n", sender_funded_tx_hash.ToString().c_str(), retrieval.c_str());
@@ -1042,12 +1042,12 @@ static bool ProcessOffChain(
         retrieval_data += " ";
         retrieval_data += commit_tx.GetHash().ToString();
 
-        wallet->add_to_retrieval_string(sender_address_bind_nonce, retrieval_data);
+        wallet->add_to_retrieval_string(sender_address_bind_nonce, retrieval_data, true);
         printf("ProcessOffChain() : wrote sender address + nonces + committx_id to retrieve string %s \n", retrieval_data.c_str());
 
         std::string retrieval;
-        wallet->get_retrieval_string(sender_address_bind_nonce, retrieval);
-        if(!wallet->SetRetrieveString(relayed_delegatetx_hash, retrieval)){
+        wallet->get_retrieval_string(sender_address_bind_nonce, retrieval, true);
+        if(!wallet->SetRetrieveString(relayed_delegatetx_hash, retrieval, true)){
             printf("ProcessOffChain(): confirm-transfer processing: failed to set retrieve string \n");
         } else {
             printf("stored retrieval, txid : %s string: %s\n", relayed_delegatetx_hash.ToString().c_str(), retrieval_data.c_str());

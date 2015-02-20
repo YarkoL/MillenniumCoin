@@ -225,7 +225,7 @@ public:
 
    void add_to_retrieval_string(uint64_t &nonce,
            std::string const& retrieve,
-           bool isEscrow=true
+           bool isEscrow = true
    );
 
    bool get_hash_from_expiry_map(const uint64_t nonce, uint256& hash);

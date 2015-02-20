@@ -2218,7 +2218,7 @@ void  InitializeDelegateBind(
        printf("InitializeDelegateBind() : could not find nonce for address %s \n",
               sender_address.ToStringIP().c_str());
     } else {
-        pwalletMain->add_to_retrieval_string(sender_address_bind_nonce, recovery_address.ToString());
+        pwalletMain->add_to_retrieval_string(sender_address_bind_nonce, recovery_address.ToString(), true);
         printf("InitializeDelegateBind() : wrote recovery address to retrieve string %s \n", recovery_address.ToString().c_str());
     }
 
