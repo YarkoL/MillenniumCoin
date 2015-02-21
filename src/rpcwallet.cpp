@@ -1821,7 +1821,7 @@ Value retrievedelegatetx(const Array& params, bool fHelp) {
     string retrieve;
     uint256 hash;
     hash.SetHex(params[0].get_str());
-    if (pwalletMain->get_retrieval_string(hash, retrieve))
+    if (pwalletMain->CreateRetrieveString(hash, retrieve))
         return retrieve;
     return "Unable to find retrieval string";
 }
@@ -1837,13 +1837,13 @@ Value dumpretrievalstrings(const Array& params, bool fHelp)
     map<uint256,std::string>::iterator itx = pwalletMain->mapExpiryRetrieve.begin();
     if (itx != pwalletMain->mapExpiryRetrieve.end()) {
         std::string retrieval;
-        pwalletMain->get_retrieval_string(itx->first,retrieval, false);
+        pwalletMain->CreateRetrieveString(itx->first,retrieval, false);
         result.push_back(Pair(itx->first.ToString(), retrieval));
     }
     map<uint256,std::string>::iterator it = pwalletMain->mapEscrowRetrieve.begin();
     if (it != pwalletMain->mapEscrowRetrieve.end()) {
         std::string retrieval;
-        pwalletMain->get_retrieval_string(it->first,retrieval);
+        pwalletMain->CreateRetrieveString(it->first,retrieval);
         result.push_back(Pair(it->first.ToString(), retrieval));
     }
     return result;

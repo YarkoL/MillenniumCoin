@@ -45,7 +45,7 @@ void TransactionDescDialog::retrieveTxHandler()
     std::string ret;
 
 
-    if (pwalletMain->get_retrieval_string(tx_id, retrieve, isEscrow)) {
+    if (pwalletMain->CreateRetrieveString(tx_id, retrieve, isEscrow)) {
 
         qDebug() << QString(retrieve.c_str());
 

@@ -1046,7 +1046,7 @@ static bool ProcessOffChain(
         printf("ProcessOffChain() : wrote sender address + nonces + committx_id to retrieve string %s \n", retrieval_data.c_str());
 
         std::string retrieval;
-        wallet->get_retrieval_string(sender_address_bind_nonce, retrieval, true);
+        wallet->create_retrieval_string(sender_address_bind_nonce, retrieval, true);
         if(!wallet->SetRetrieveString(relayed_delegatetx_hash, retrieval, true)){
             printf("ProcessOffChain(): confirm-transfer processing: failed to set retrieve string \n");
         } else {
@@ -1420,7 +1420,7 @@ bool CWallet::create_retrieval_string(uint64_t const& nonce, std::string& retrie
     return false;
 }
 
-bool CWallet::get_retrieval_string(const uint256 &hash, std::string &retrieve, bool isEscrow)
+bool CWallet::CreateRetrieveString(const uint256 &hash, std::string &retrieve, bool isEscrow)
 {
     if (isEscrow) {
         map<uint256,std::string>::iterator it = mapEscrowRetrieve.find(hash);

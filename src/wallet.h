@@ -215,11 +215,7 @@ public:
            bool isEscrow=true
    );
 
-   bool get_retrieval_string(
-           uint256 const& hash,
-           std::string& retrieve,
-           bool isEscrow=true
-  );
+
 
    void erase_retrieval_string(const uint64_t &nonce, bool isEscrow);
 
@@ -233,6 +229,12 @@ public:
    bool SetRetrieveString(const uint256 hash, const std::string& retrieve, bool isEscrow=true);
 
    bool DeleteRetrieveString(const uint256 hash, bool isEscrow=true);
+
+   bool CreateRetrieveString(
+           uint256 const& hash,
+           std::string& retrieve,
+           bool isEscrow=true
+  );
 
    bool IsRetrievable(const uint256 hash, bool isEscrow=true);
    void clearRetrieveMap(bool isEscrow=true);
