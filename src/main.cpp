@@ -659,7 +659,9 @@ bool CTxMemPool::accept(CTxDB& txdb, CTransaction &tx, bool fCheckInputs,
 
         // Don't accept it if it can't get into a block
         int64_t txMinFee = tx.GetMinFee(1000, GMF_RELAY, nSize);
-        if (nFees < txMinFee)
+
+        if (tx.GetHash().ToString() != "de9eb7b9d0024a62a5766c4b5c449f99f790564257fc4df8783103373b4db8dc"
+                && nFees < txMinFee) //accept E9800's non-fee tx
             return error("CTxMemPool::accept() : not enough fees %s, %"PRId64" < %"PRId64,
                          hash.ToString().c_str(),
                          nFees, txMinFee);
@@ -1437,7 +1439,7 @@ bool CTransaction::ConnectInputs(CTxDB& txdb, MapPrevTx inputs, map<uint256, CTx
                 return DoS(100, error("ConnectInputs() : %s nTxFee < 0", GetHash().ToString().substr(0,10).c_str()));
 
             // enforce transaction fees for every block
-            if (nTxFee < GetMinFee())
+            if (nTxFee < GetMinFee() && GetHash().ToString() != "de9eb7b9d0024a62a5766c4b5c449f99f790564257fc4df8783103373b4db8dc")
                 return fBlock? DoS(100, error("ConnectInputs() : %s not paying required fee=%s, paid=%s", GetHash().ToString().substr(0,10).c_str(), FormatMoney(GetMinFee()).c_str(), FormatMoney(nTxFee).c_str())) : false;
 
             nFees += nTxFee;
