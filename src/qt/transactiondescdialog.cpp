@@ -52,29 +52,39 @@ void TransactionDescDialog::retrieveTxHandler()
         std::vector<std::string> params;
         boost::split(params, retrieve, boost::is_any_of(" "));
         if (isEscrow ) {
-         try {
-                std::string const destination_address = params[0];
-                uint256 const sender_confirmtx_hash = ParseHashV(params[1], "sender_confirmtx_hash");
-                std::string const sender_tor_address = params[2];
-                uint64_t const sender_address_bind_nonce = toUint64(params[3]);
-                uint64_t const transfer_nonce =  toUint64(params[4]);
-                std::vector<unsigned char> const transfer_tx_hash = ParseHexV(params[5],"transfer_tx_hash");
+            std::string const destination_address = params[0];
+            uint256 const bind_txid = ParseHashV(params[1], "bind_txid");
+            ret = CreateTransferExpiry(destination_address, bind_txid, depth);
+            err = QString(ret.c_str());
 
-                 ret = CreateTransferEscrow (
-                             destination_address,
-                             sender_confirmtx_hash,
-                             sender_tor_address,
-                             sender_address_bind_nonce,
-                             transfer_nonce,
-                             transfer_tx_hash,
-                             depth
-                             );
-                 err = QString(ret.c_str());
+            if (depth >= 5 && !err.startsWith(QString("OK!")) ) {
+                try {
+
+                       std::string const destination_address = params[0];
+                       uint256 const sender_confirmtx_hash = ParseHashV(params[1], "sender_confirmtx_hash");
+                       std::string const sender_tor_address = params[2];
+                       uint64_t const sender_address_bind_nonce = toUint64(params[3]);
+                       uint64_t const transfer_nonce =  toUint64(params[4]);
+                       std::vector<unsigned char> const transfer_tx_hash = ParseHexV(params[5],"transfer_tx_hash");
+
+                        ret = CreateTransferEscrow (
+                                    destination_address,
+                                    sender_confirmtx_hash,
+                                    sender_tor_address,
+                                    sender_address_bind_nonce,
+                                    transfer_nonce,
+                                    transfer_tx_hash,
+                                    depth
+                                    );
+                        err = QString(ret.c_str());
+                        //if (err.startsWith(QString("OK")))
+                   }
+                   catch (const std::exception& ex)
+                   {
+                        err = QString(ex.what());
+                   }
             }
-            catch (const std::exception& ex)
-            {
-                 err = QString(ex.what());
-            }
+
          } else {
 
             std::string const destination_address = params[0];

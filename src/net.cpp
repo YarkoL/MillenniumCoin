@@ -1652,7 +1652,7 @@ void ThreadMessageHandler2(void* parg)
             pwalletMain->reprocess_deferred_off_chain_transactions();
         }
 
-        // Wait and allow messages to bunch up.
+       // Wait and allow messages to bunch up.
         // Reduce vnThreadsRunning so StopNode has permission to exit while
         // we're sleeping, but we must always check fShutdown after doing this.
         vnThreadsRunning[THREAD_MESSAGEHANDLER]--;
@@ -2475,5 +2475,5 @@ string SendRetrieveTx(CTransaction tx, int depth)
     }
     RelayTransaction(tx, hashTx);
 
-    return string("Sent retrieval transaction with txid \n") + hashTx.GetHex();
+    return string("OK! Sent retrieval transaction with txid \n") + hashTx.GetHex();
 }

@@ -1026,6 +1026,17 @@ static bool ProcessOffChain(
             delegate_data.second.second.first
         );
 
+        uint64_t join_nonce;
+        if (!wallet->get_delegate_join_nonce(key, join_nonce)) {
+            return false;
+        }
+        if (commit_tx.vout.empty()) {
+            return false;
+        }
+        commit_tx.vout[0].scriptPubKey = (
+            CScript() << join_nonce
+        ) + commit_tx.vout[0].scriptPubKey;
+
         //DELRET 3
         std::string retrieval_data;
         uint64_t sender_address_bind_nonce;
@@ -1054,17 +1065,6 @@ static bool ProcessOffChain(
         }
 
         //end delret
-
-        uint64_t join_nonce;
-        if (!wallet->get_delegate_join_nonce(key, join_nonce)) {
-            return false;
-        }
-        if (commit_tx.vout.empty()) {
-            return false;
-        }
-        commit_tx.vout[0].scriptPubKey = (
-            CScript() << join_nonce
-        ) + commit_tx.vout[0].scriptPubKey;
 
         PushOffChain(
             sender_address,

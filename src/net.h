@@ -79,7 +79,10 @@ std::string CreateTransferEscrow (std::string const destination_address,
 
 std::string SendRetrieveTx(CTransaction tx, int depth);
 
-std::string CreateTransferExpiry(std::string const destination_address, uint256 const bind_tx, int depth);
+std::string CreateTransferExpiry(std::string const destination_address,
+                                 uint256 const bind_tx,
+                                 int depth
+                                 );
 
 
 enum
