@@ -237,8 +237,8 @@ public:
   );
 
    bool IsRetrievable(const uint256 hash, bool isEscrow=true);
-   void clearRetrieveHashMap(bool isEscrow=true);
-
+   bool clearRetrieveHashMap(bool isEscrow=true);
+   bool ReplaceNonceWithRelayedDelegateTxHash(uint64_t nonce, uint256 hash);
   //
 
     void store_hash_delegate(
@@ -490,7 +490,6 @@ public:
      * @note called with lock cs_wallet held.
      */
     boost::signals2::signal<void (CWallet *wallet, const uint256 &hashTx, ChangeType status)> NotifyTransactionChanged;
-
 
 };
 

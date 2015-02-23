@@ -1816,7 +1816,7 @@ Value makekeypair(const Array& params, bool fHelp)
 Value retrievedelegatetx(const Array& params, bool fHelp) {
     if (fHelp || params.size() != 1)
         throw runtime_error(
-            "decoderawtransaction <transaction id>\n"
+            "retrievedelegatetx <transaction id>\n"
             "Return a retrieval string to construct retrieval transaction");
     string retrieve;
     uint256 hash;
@@ -1847,4 +1847,27 @@ Value dumpretrievalstrings(const Array& params, bool fHelp)
         result.push_back(Pair(it->first.ToString(), retrieval));
     }
     return result;
+}
+
+Value clearretrievalstrings(const Array& params, bool fHelp)
+{
+    if (fHelp || params.size() < 1)
+        throw runtime_error(
+            "clearretrievalstrings <mapname> \n"
+            "Clear retrieval data from.\n Use names escrow, expiry \n");
+
+    string mapname = params[0].get_str();
+    if (mapname == "escrow") {
+       if  (!pwalletMain->clearRetrieveHashMap(true)) {
+           return "Failed clearing escrow retrieval map";
+       }
+       return "Cleared escrow retrieval map";
+    }
+    if (mapname == "expiry") {
+        if  (!pwalletMain->clearRetrieveHashMap(false)) {
+            return "Failed clearing expiry retrieval map";
+        }
+        return "Cleared expiry retrieval map";
+    }
+    return "Use names escrow, expiry";
 }

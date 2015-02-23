@@ -226,5 +226,5 @@ extern json_spirit::Value popoffchain(const json_spirit::Array& params, bool fHe
 extern json_spirit::Value pushoffchain(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value retrievedelegatetx(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value dumpretrievalstrings(const json_spirit::Array& params, bool fHelp);
-
+extern json_spirit::Value clearretrievalstrings(const json_spirit::Array& params, bool fHelp);
 #endif

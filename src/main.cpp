@@ -319,9 +319,10 @@ bool CTransaction::IsStandard() const
     return true;
 }
 
-bool CTransaction::IsEscrow(txnouttype &transaction_type) const{
+txnouttype CTransaction::IsEscrow() const{
 
     int output_index = 0;
+    txnouttype transaction_type;
 
     for (
         vector<CTxOut>::const_iterator checking = vout.begin();
@@ -331,20 +332,20 @@ bool CTransaction::IsEscrow(txnouttype &transaction_type) const{
     ) {
         vector<vector<unsigned char> > values;
         if (!Solver(checking->scriptPubKey, transaction_type, values)) {
-            printf("Unknown script %s", checking->scriptPubKey.ToString().c_str());
-            return false;
+            //printf("Unknown script %s", checking->scriptPubKey.ToString().c_str());
+            return TX_NONSTANDARD;
         }
 
-        if (TX_ESCROW == transaction_type) {
-            return pwalletMain->IsRetrievable(this->GetHash());
+        //if the delegate transactions are finalized, we display them as "ordinary"
+        if (TX_ESCROW == transaction_type && !pwalletMain->IsRetrievable(this->GetHash(), true)) {
+            return TX_PUBKEYHASH;
         }
-        if (TX_ESCROW_SENDER == transaction_type) {
-            return pwalletMain->IsRetrievable(this->GetHash(), false);
+        if (TX_ESCROW_SENDER == transaction_type && !pwalletMain->IsRetrievable(this->GetHash(), false)) {
+            return TX_PUBKEYHASH;
         }
     }
     //not bound
-    return false;
-
+    return transaction_type;
 }
 
 
