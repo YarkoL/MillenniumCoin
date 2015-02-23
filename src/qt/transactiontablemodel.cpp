@@ -310,7 +310,7 @@ QString TransactionTableModel::formatTxStatus(const TransactionRecord *wtx) cons
         break;
     case TransactionStatus::Escrow:
     case TransactionStatus::Expiry:
-        status = tr("Escrow not released");
+        status = tr("Unfinalized delegate transaction");
         break;
     }
 
@@ -363,6 +363,10 @@ QString TransactionTableModel::formatTxType(const TransactionRecord *wtx) const
         return tr("Payment to yourself");
     case TransactionRecord::Generated:
         return tr("Mined");
+    case TransactionRecord::SendAsDelegate:
+        return tr("Sent as delegate");
+    case TransactionRecord::SendByDelegate:
+        return tr("Sent by delegate");
     default:
         return QString();
     }
@@ -399,6 +403,8 @@ QString TransactionTableModel::formatTxToAddress(const TransactionRecord *wtx, b
 
         return lookupAddress(wtx->address, tooltip);
     case TransactionRecord::SendToOther:
+    case TransactionRecord::SendAsDelegate:
+    case TransactionRecord::SendByDelegate:
         return QString::fromStdString(wtx->address);
     case TransactionRecord::SendToSelf:
     default:
@@ -414,6 +420,8 @@ QVariant TransactionTableModel::addressColor(const TransactionRecord *wtx) const
     case TransactionRecord::RecvWithAddress:
     case TransactionRecord::SendToAddress:
     case TransactionRecord::Generated:
+    case TransactionRecord::SendAsDelegate:
+    case TransactionRecord::SendByDelegate:
         {
         QString label = walletModel->getAddressTableModel()->labelForAddress(QString::fromStdString(wtx->address));
         if(label.isEmpty())

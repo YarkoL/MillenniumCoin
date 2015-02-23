@@ -173,13 +173,19 @@ void TransactionRecord::updateStatus(const CWalletTx &wtx)
     status.countsForBalance = wtx.IsTrusted() && !(wtx.GetBlocksToMaturity() > 0);
     status.depth = wtx.GetDepthInMainChain();
     status.cur_num_blocks = nBestHeight;
-    txnouttype txtype;
+
 
     if (wtx.IsEscrow() == TX_ESCROW ) {
        status.status = TransactionStatus::Escrow;
+       type = TransactionRecord::SendAsDelegate;
+    } else if (type == TransactionRecord::SendAsDelegate) {
+        type = TransactionRecord::SendToOther;
     }
     else if (wtx.IsEscrow() == TX_ESCROW_SENDER) {
         status.status = TransactionStatus::Expiry;
+        type = TransactionRecord::SendByDelegate;
+    } else if (type == TransactionRecord::SendByDelegate) {
+        type = TransactionRecord::SendToOther;
     }
     /*
     if (wtx.IsEscrow(txtype)) {
@@ -249,18 +255,7 @@ void TransactionRecord::updateStatus(const CWalletTx &wtx)
         }
     }
 }
-/*
-void TransactionRecord::updateStatus(const CWallet *wallet)
-{
-    LOCK(wallet->cs_wallet);
-    std::map<uint256, CWalletTx>::iterator mi = wallet->mapWallet.find(rec->hash);
 
-    if(mi != wallet->mapWallet.end())
-    {
-        rec->updateStatus(mi->second);
-    }
-}
-*/
 bool TransactionRecord::statusUpdateNeeded()
 {
     return status.cur_num_blocks != nBestHeight;

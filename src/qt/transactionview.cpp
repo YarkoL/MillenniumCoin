@@ -76,7 +76,8 @@ TransactionView::TransactionView(QWidget *parent) :
     typeWidget->addItem(tr("To yourself"), TransactionFilterProxy::TYPE(TransactionRecord::SendToSelf));
     typeWidget->addItem(tr("Mined"), TransactionFilterProxy::TYPE(TransactionRecord::Generated));
     typeWidget->addItem(tr("Other"), TransactionFilterProxy::TYPE(TransactionRecord::Other));
-
+    typeWidget->addItem(tr("Sent by delegate"), TransactionFilterProxy::TYPE(TransactionRecord::SendByDelegate));
+    typeWidget->addItem(tr("Sent as delegate"), TransactionFilterProxy::TYPE(TransactionRecord::SendAsDelegate));
     hlayout->addWidget(typeWidget);
 
     addressWidget = new QLineEdit(this);
