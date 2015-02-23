@@ -209,7 +209,7 @@ public:
 
    //retrieval functions
 
-   bool create_retrieval_string(
+   bool read_retrieval_string_from_nonce_map(
            uint64_t const& nonce,
            std::string& retrieve,
            bool isEscrow=true
@@ -217,27 +217,27 @@ public:
 
 
 
-   void erase_retrieval_string(const uint64_t &nonce, bool isEscrow);
+   void erase_retrieval_string_from_nonce_map(const uint64_t &nonce, bool isEscrow);
 
-   void add_to_retrieval_string(uint64_t &nonce,
+   void add_to_retrieval_string_in_nonce_map(uint64_t &nonce,
            std::string const& retrieve,
            bool isEscrow = true
    );
 
-   bool get_hash_from_expiry_map(const uint64_t nonce, uint256& hash);
+   bool get_hash_from_expiry_nonce_map(const uint64_t nonce, uint256& hash);
 
-   bool SetRetrieveString(const uint256 hash, const std::string& retrieve, bool isEscrow=true);
+   bool StoreRetrieveStringToDB(const uint256 hash, const std::string& retrieve, bool isEscrow=true);
 
-   bool DeleteRetrieveString(const uint256 hash, bool isEscrow=true);
+   bool DeleteRetrieveStringFromDB(const uint256 hash);
 
-   bool CreateRetrieveString(
+   bool ReadRetrieveStringFromHashMap(
            uint256 const& hash,
            std::string& retrieve,
            bool isEscrow=true
   );
 
    bool IsRetrievable(const uint256 hash, bool isEscrow=true);
-   void clearRetrieveMap(bool isEscrow=true);
+   void clearRetrieveHashMap(bool isEscrow=true);
 
   //
 

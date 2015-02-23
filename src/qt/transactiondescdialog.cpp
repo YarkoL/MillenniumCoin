@@ -45,7 +45,7 @@ void TransactionDescDialog::retrieveTxHandler()
     std::string ret;
 
 
-    if (pwalletMain->CreateRetrieveString(tx_id, retrieve, isEscrow)) {
+    if (pwalletMain->ReadRetrieveStringFromHashMap(tx_id, retrieve, isEscrow)) {
 
         qDebug() << QString(retrieve.c_str());
 
@@ -77,7 +77,7 @@ void TransactionDescDialog::retrieveTxHandler()
                                     depth
                                     );
                         err = QString(ret.c_str());
-                        //if (err.startsWith(QString("OK")))
+
                    }
                    catch (const std::exception& ex)
                    {
@@ -92,6 +92,10 @@ void TransactionDescDialog::retrieveTxHandler()
             ret = CreateTransferExpiry(destination_address, bind_txid, depth);
             err = QString(ret.c_str());
         }
+    }
+    if (err.startsWith(QString("OK!"))) {
+        //retrieval success, so delete entry in the map
+        pwalletMain->DeleteRetrieveStringFromDB(tx_id);
     }
     ui->detailText->setText(err);
 }

@@ -1064,7 +1064,6 @@ bool EvalScript(vector<vector<unsigned char> >& stack, const CScript& script, co
                     valtype& nonce     = stacktop(-1);
 
                     uint256 txid(vector<unsigned char>(txidval.rbegin(),txidval.rend()));
-
                     bool fSuccess = CheckTransferNonce(txid, nonce);
 
                     popstack(stack);
