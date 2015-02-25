@@ -92,7 +92,6 @@ extern int64_t nMinimumInputValue;
 extern int64_t nAdvertisedBalance;
 extern bool fUseFastIndex;
 extern unsigned int nDerivationMethodIndex;
-extern int64_t nDelegateFee;
 extern bool fEnforceCanonical;
 
 // Minimum disk space required - used in CheckDiskSpace()

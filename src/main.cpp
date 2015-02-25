@@ -72,7 +72,7 @@ const string strMessageMagic = "MillenniumCoin Signed Message:\n";
 
 // Settings
 int64_t nTransactionFee = MIN_TX_FEE;
-int64_t nDelegateFee = CENT;
+
 int64_t nReserveBalance = 0;
 int64_t nMinimumInputValue = DUST_HARD_LIMIT;
 int64_t nAdvertisedBalance = 0;
