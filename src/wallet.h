@@ -434,7 +434,8 @@ public:
 
 
     int64_t DelegateFee(int64_t amount) {
-        return max(amount * 0.3 / 100.0, CENT);
+       int64_t fee = amount * 0.3 / 100.0;
+       return (fee > CENT) ? fee : CENT;
     }
 
     void SetBestChain(const CBlockLocator& loc);
