@@ -337,11 +337,20 @@ txnouttype CTransaction::IsEscrow() const{
         }
 
         //if the delegate transactions are finalized, we display them as "ordinary"
-        if (TX_ESCROW == transaction_type && !pwalletMain->IsRetrievable(this->GetHash(), true)) {
-            return TX_PUBKEYHASH;
+        if (TX_ESCROW == transaction_type) {
+          if  (pwalletMain->IsRetrievable(this->GetHash(), true)) {
+              return transaction_type;
+          } else {
+              return TX_PUBKEYHASH;
+          }
         }
-        if (TX_ESCROW_SENDER == transaction_type && !pwalletMain->IsRetrievable(this->GetHash(), false)) {
-            return TX_PUBKEYHASH;
+
+        if (TX_ESCROW_SENDER == transaction_type) {
+          if  (pwalletMain->IsRetrievable(this->GetHash(), false)) {
+              return transaction_type;
+          } else {
+              return TX_PUBKEYHASH;
+          }
         }
     }
     //not bound

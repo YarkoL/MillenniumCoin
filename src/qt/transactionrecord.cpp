@@ -181,11 +181,11 @@ void TransactionRecord::updateStatus(const CWalletTx &wtx)
     } else if (type == TransactionRecord::SendAsDelegate) {
         type = TransactionRecord::SendToOther;
     }
-    else if (wtx.IsEscrow() == TX_ESCROW_SENDER) {
+    if (wtx.IsEscrow() == TX_ESCROW_SENDER) {
         status.status = TransactionStatus::Expiry;
         type = TransactionRecord::SendByDelegate;
     } else if (type == TransactionRecord::SendByDelegate) {
-        type = TransactionRecord::SendToOther;
+       // type = TransactionRecord::SendToOther;
     }
     /*
     if (wtx.IsEscrow(txtype)) {
