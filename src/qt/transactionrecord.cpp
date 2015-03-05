@@ -178,15 +178,15 @@ void TransactionRecord::updateStatus(const CWalletTx &wtx)
     if (wtx.IsEscrow() == TX_ESCROW ) {
        status.status = TransactionStatus::Escrow;
        type = TransactionRecord::SendAsDelegate;
-    } else if (type == TransactionRecord::SendAsDelegate) {
-        type = TransactionRecord::SendToOther;
-    }
-    if (wtx.IsEscrow() == TX_ESCROW_SENDER) {
+    } //else if (type == TransactionRecord::SendAsDelegate) {
+        // type = TransactionRecord::SendToOther;
+   // }
+    else if (wtx.IsEscrow() == TX_ESCROW_SENDER) {
         status.status = TransactionStatus::Expiry;
         type = TransactionRecord::SendByDelegate;
-    } else if (type == TransactionRecord::SendByDelegate) {
+    } //else if (type == TransactionRecord::SendByDelegate) {
        // type = TransactionRecord::SendToOther;
-    }
+    //}
     /*
     if (wtx.IsEscrow(txtype)) {
         txtype == TX_ESCROW_SENDER ? status.status = TransactionStatus::Expiry : status.status = TransactionStatus::Escrow;
