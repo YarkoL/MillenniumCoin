@@ -147,7 +147,6 @@ CAddress GetLocalAddress(const CNetAddr *paddrPeer)
             ret.advertised_balance = (int64_t)(fraction * pwalletMain->GetBalance());
         }
     }
-    if (fDebug) printf("%s advertisedbalance : %lu\n", ret.ToStringIP().c_str() ,ret.advertised_balance);
     return ret;
     }
 

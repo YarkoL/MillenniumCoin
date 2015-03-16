@@ -612,7 +612,7 @@ Value createtransferexpiry(const Array& params, bool fHelp)
 
     CBitcoinAddress destination_address_parsed(destination_address);
     if (!destination_address_parsed.IsValid())
-        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid NUD address");
+        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid MIL address");
 
     CTransaction prevTx;
     uint256 hashBlock = 0;

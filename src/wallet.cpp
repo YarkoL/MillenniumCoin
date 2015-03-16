@@ -156,7 +156,7 @@ static bool ProcessOffChain(
 
             wallet->store_address_bind(sender_address, sender_address_bind_nonce);
 
-            if (fDebug) printf("Address bind: address %s nonce %lu \n", sender_address.ToString().c_str(), sender_address_bind_nonce);
+            if (fDebug) printf("Address bind: address %s nonce %llu \n", sender_address.ToString().c_str(), static_cast<unsigned long long>(sender_address_bind_nonce));
 
             confirm_transfer.scriptPubKey = CScript() << data << sender_address_bind_nonce;
 
@@ -310,7 +310,7 @@ static bool ProcessOffChain(
             }
             memcpy(&delegate_address_bind_nonce, data.data(), sizeof(delegate_address_bind_nonce));
 
-            if (fDebug) printf("Delegate read delegate bind nonce : %lu \n", delegate_address_bind_nonce);
+            if (fDebug) printf("Delegate read delegate bind nonce : %llu \n",static_cast<unsigned long long>(delegate_address_bind_nonce));
 
             //DELRET 1
             InitializeDelegateBind(
@@ -453,13 +453,13 @@ static bool ProcessOffChain(
         }
         wallet->add_to_retrieval_string_in_nonce_map(nonce, funded_txid,false);
         if (fDebug) {
-            printf("Added to sender retrieval string at nonce %lu funded tx id %s \n",
-                   nonce,  funded_txid.c_str());
+            printf("Added to sender retrieval string at nonce %llu funded tx id %s \n",
+                   static_cast<unsigned long long>(nonce),  funded_txid.c_str());
         }
         std::string retrieve;
         if (!wallet->read_retrieval_string_from_nonce_map(nonce, retrieve, false)) {
-           printf("Could not get retrieve string for nonce %lu while processing confirm-sender-bind\n",
-           nonce);
+           printf("Could not get retrieve string for nonce %llu while processing confirm-sender-bind\n",
+           static_cast<unsigned long long>(nonce));
         } else {
            if (wallet->StoreRetrieveStringToDB(funded_tx.GetHash(), retrieve, false)) {
             if (fDebug) printf("Wrote retrieve string for txid %s while processing confirm-sender-bind\n with contents: %s\n",
@@ -873,7 +873,7 @@ static bool ProcessOffChain(
 
         uint256 hash;
         if (!wallet->get_hash_from_expiry_nonce_map(nonce, hash)) {
-             printf("Could not get tx hash for nonce %lu while processing committed-transfer", nonce);
+             printf("Could not get tx hash for nonce %llu while processing committed-transfer", static_cast<unsigned long long>(nonce));
              return true;
         }
 
@@ -4140,8 +4140,8 @@ CTransaction CreateSenderBind(
     );
 
     if (fDebug)
-        printf("CreateSenderBind : \n recover address : %s expiry: %lu tor address: %s nonce: %lu\n",
-               recover_address_parsed.ToString().c_str(), expiry, local_tor_address_parsed.ToStringIP().c_str(), received_delegate_nonce );
+        printf("CreateSenderBind : \n recover address : %s expiry: %llu tor address: %s nonce: %llu\n",
+               recover_address_parsed.ToString().c_str(), static_cast<unsigned long long>(expiry), local_tor_address_parsed.ToStringIP().c_str(), static_cast<unsigned long long>(received_delegate_nonce));
 
     CTransaction rawTx;
 

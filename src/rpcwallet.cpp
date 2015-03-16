@@ -307,7 +307,7 @@ Value sendbydelegate(const Array& params, bool fHelp)
 {
     if (fHelp || params.size() != 2)
         throw runtime_error(
-            "sendbydelegate <nudaddress> <amount>\n"
+            "sendbydelegate <address> <amount>\n"
             "<amount> is a real and is rounded to the nearest 0.00000001"
            // + HelpRequiringPassphrase()
             );
