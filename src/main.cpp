@@ -1012,21 +1012,13 @@ int64_t GetProofOfWorkReward(int64_t nFees)
     if (pindexBest->nHeight == 1)
     {
       nSubsidy = 200000 * COIN;
-      return nSubsidy + nFees;
     }
     
-    else if (pindexBest->nHeight <= 100)
+    else if (pindexBest->nHeight >= FIRST_NEW_POW_BLOCK || pindexBest->nHeight <= 100)
     {
-      nSubsidy = 0 * COIN;
-      return nSubsidy + nFees;
+      nSubsidy = 0;
     }
 
-    else if (pindexBest->nHeight >= FIRST_NEW_POW_BLOCK)
-    {
-        nSubsidy = 1 * COIN;
-        return nSubsidy + nFees;
-    }
-	
     if (fDebug && GetBoolArg("-printcreation"))
         printf("GetProofOfWorkReward() : create=%s nSubsidy=%"PRId64"\n", FormatMoney(nSubsidy).c_str(), nSubsidy);
 	
@@ -2526,7 +2518,7 @@ bool LoadBlockIndex(bool fAllowNew)
         nCoinbaseMaturity = 1; // test maturity is 1 blocks
     }
 
-    if (fTestPow) bnProofOfWorkLimit = bnProofOfWorkLimitTestNet;
+    //if (fTestPow) bnProofOfWorkLimit = bnProofOfWorkLimitTestNet;
 
 
     //
@@ -2563,21 +2555,7 @@ bool LoadBlockIndex(bool fAllowNew)
         {
             block.nNonce   = 1901;
         }
-        if (false  && (block.GetHash() != hashGenesisBlock)) {
 
-        // This will figure out a valid hash and Nonce if you're
-        // creating a different genesis block:
-            uint256 hashTarget = CBigNum().SetCompact(block.nBits).getuint256();
-            while (block.GetHash() > hashTarget)
-               {
-                   ++block.nNonce;
-                   if (block.nNonce == 0)
-                   {
-                       printf("NONCE WRAPPED, incrementing time");
-                       ++block.nTime;
-                   }
-               }
-        }
         block.print();
         printf("block.GetHash() == %s\n", block.GetHash().ToString().c_str());
         printf("block.hashMerkleRoot == %s\n", block.hashMerkleRoot.ToString().c_str());

@@ -27,7 +27,7 @@ class CRequestTracker;
 class CNode;
 
 static const int LAST_POW_BLOCK = 40100;
-static const int FIRST_NEW_POW_BLOCK = 212418;
+static const int FIRST_NEW_POW_BLOCK = 320000;
 
 static const unsigned int MAX_BLOCK_SIZE = 1000000;
 static const unsigned int MAX_BLOCK_SIZE_GEN = MAX_BLOCK_SIZE/2;
