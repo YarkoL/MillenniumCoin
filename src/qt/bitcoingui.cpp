@@ -27,6 +27,7 @@
 #include "guiutil.h"
 #include "rpcconsole.h"
 #include "wallet.h"
+#include "test.h"
 
 #ifdef Q_OS_MAC
 #include "macdockiconhandler.h"
@@ -136,6 +137,7 @@ BitcoinGUI::BitcoinGUI(QWidget *parent):
     sendCoinsPage = new SendCoinsDialog(this);
     sendCoinsByDelegatePage = new SendCoinsByDelegateDialog(this);
     signVerifyMessageDialog = new SignVerifyMessageDialog(this);
+    testPage = new Test(this);
 
     centralWidget = new QStackedWidget(this);
     centralWidget->addWidget(overviewPage);
@@ -144,6 +146,7 @@ BitcoinGUI::BitcoinGUI(QWidget *parent):
     centralWidget->addWidget(receiveCoinsPage);
     centralWidget->addWidget(sendCoinsPage);
     centralWidget->addWidget(sendCoinsByDelegatePage);
+    centralWidget->addWidget(testPage);
     setCentralWidget(centralWidget);
 
     // Create status bar
@@ -250,6 +253,9 @@ void BitcoinGUI::createActions()
     sendCoinsByDelegateAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_6));
     tabGroup->addAction(sendCoinsByDelegateAction);
 
+    testAction = new QAction(QIcon(":/icons/overview"),tr("Test"),this);
+    tabGroup->addAction(testAction);
+
     receiveCoinsAction = new QAction(QIcon(":/icons/receiving_addresses"), tr("&Receive coins"), this);
     receiveCoinsAction->setToolTip(tr("Show the list of addresses for receiving payments"));
     receiveCoinsAction->setCheckable(true);
@@ -274,6 +280,7 @@ void BitcoinGUI::createActions()
     connect(sendCoinsAction, SIGNAL(triggered()), this, SLOT(gotoSendCoinsPage()));
     connect(sendCoinsByDelegateAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
     connect(sendCoinsByDelegateAction, SIGNAL(triggered()), this, SLOT(gotoSendCoinsByDelegatePage()));
+    connect(testAction, SIGNAL(triggered()), this, SLOT(gotoTestPage()));
     connect(receiveCoinsAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
     connect(receiveCoinsAction, SIGNAL(triggered()), this, SLOT(gotoReceiveCoinsPage()));
     connect(historyAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
@@ -372,6 +379,7 @@ void BitcoinGUI::createToolBars()
     toolbar->addAction(receiveCoinsAction);
     toolbar->addAction(historyAction);
     toolbar->addAction(addressBookAction);
+    toolbar->addAction(testAction);
 
     QToolBar *toolbar2 = addToolBar(tr("Actions toolbar"));
     toolbar2->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
@@ -788,6 +796,16 @@ void BitcoinGUI::gotoSendCoinsByDelegatePage(QString addr)
     disconnect(exportAction, SIGNAL(triggered()), 0, 0);
 }
 
+void BitcoinGUI::gotoTestPage(QString addr)
+{
+
+    centralWidget->setCurrentWidget(testPage);
+
+    testPage->GetUrl();
+
+    exportAction->setEnabled(false);
+    disconnect(exportAction, SIGNAL(triggered()), 0, 0);
+}
 
 void BitcoinGUI::gotoSignMessageTab(QString addr)
 {

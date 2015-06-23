@@ -492,6 +492,7 @@ int CAddrMan::Check_()
 }
 #endif
 
+
 void CAddrMan::GetAddr_(std::vector<CAddress> &vAddr)
 {
     int nNodes = ADDRMAN_GETADDR_MAX_PCT*vRandom.size()/100;

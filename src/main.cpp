@@ -2553,7 +2553,7 @@ bool LoadBlockIndex(bool fAllowNew)
         block.nNonce   = 5037564;
 		if(fTestNet)
         {
-            block.nNonce   = 1901;
+            block.nNonce   = 1369;
         }
 
         block.print();
