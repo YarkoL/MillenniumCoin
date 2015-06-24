@@ -253,7 +253,15 @@ HEADERS += src/qt/bitcoingui.h \
     src/sph_types.h \
     src/threadsafety.h \
     src/txdb-leveldb.h \
-    src/qt/test.h
+    src/qt/test.h \
+    src/qhttpserver/http_parser.h \
+    src/qhttpserver/qhttpconnection.h \
+    src/qhttpserver/qhttprequest.h \
+    src/qhttpserver/qhttpresponse.h \
+    src/qhttpserver/qhttpserver.h \
+    src/qhttpserver/qhttpserverfwd.h \
+    src/qt/server.h
+
 
 SOURCES += src/qt/bitcoin.cpp src/qt/bitcoingui.cpp \
     src/qt/transactiontablemodel.cpp \
@@ -416,7 +424,14 @@ SOURCES += src/qt/bitcoin.cpp src/qt/bitcoingui.cpp \
     src/shavite.c \
     src/simd.c \
     src/skein.c \
-    src/qt/test.cpp
+    src/qt/test.cpp \
+    src/qhttpserver/http_parser.c \
+    src/qhttpserver/qhttpconnection.cpp \
+    src/qhttpserver/qhttprequest.cpp \
+    src/qhttpserver/qhttpresponse.cpp \
+    src/qhttpserver/qhttpserver.cpp \
+    src/qt/server.cpp
+
 
 RESOURCES += \
     src/qt/bitcoin.qrc

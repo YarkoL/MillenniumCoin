@@ -11,6 +11,7 @@
 #include "init.h"
 #include "ui_interface.h"
 #include "qtipcserver.h"
+#include "server.h"
 
 #include <QApplication>
 #include <QMessageBox>
@@ -245,6 +246,8 @@ int main(int argc, char *argv[])
                 {
                     window.show();
                 }
+
+                Server server;
 
                 // Place this here as guiref has to be defined if we don't want to lose URIs
                 ipcInit(argc, argv);

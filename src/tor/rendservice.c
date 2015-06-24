@@ -365,35 +365,58 @@ rend_config_services(const or_options_t *options, int validate_only)
   if (!validate_only) {
     old_service_list = rend_service_list;
     rend_service_list = smartlist_new();
+
+    //add coin
     service = tor_malloc_zero(sizeof(rend_service_t));
-    service->directory = tor_strdup(
-        millenniumcoin_service_directory(
-        )
-    );
+    service->directory = tor_strdup(millenniumcoin_service_directory());
     service->ports = smartlist_new();
     service->intro_period_started = time(NULL);
     service->n_intro_points_wanted = NUM_INTRO_POINTS_DEFAULT;
-    do {
-        rend_service_port_config_t* coin_port = tor_malloc(
-            sizeof(
-                rend_service_port_config_t
-            )
-        );
 
-        coin_port->virtual_port = getCoinPort();
-        coin_port->real_port = getCoinPort();
+    rend_service_port_config_t* coin_port = tor_malloc(
+        sizeof(
+            rend_service_port_config_t
+        )
+    );
 
-        coin_port->real_addr.family = AF_INET;
-        tor_inet_aton(
-            "127.0.0.1",
-            &coin_port->real_addr.addr.in_addr
-        );
-        smartlist_add(
-            service->ports,
-            coin_port
-        );
-    } while (
-        0
+    coin_port->virtual_port = getCoinPort();
+    coin_port->real_port = getCoinPort();
+
+    coin_port->real_addr.family = AF_INET;
+    tor_inet_aton(
+        "127.0.0.1",
+        &coin_port->real_addr.addr.in_addr
+    );
+    smartlist_add(
+        service->ports,
+        coin_port
+    );
+
+    //add web
+
+    service = tor_malloc_zero(sizeof(rend_service_t));
+    service->directory = tor_strdup(web_service_directory());
+    service->ports = smartlist_new();
+    service->intro_period_started = time(NULL);
+    service->n_intro_points_wanted = NUM_INTRO_POINTS_DEFAULT;
+
+    rend_service_port_config_t* web_port = tor_malloc(
+        sizeof(
+            rend_service_port_config_t
+        )
+    );
+
+    web_port->virtual_port = 80;
+    web_port->real_port = 8080;
+
+    web_port->real_addr.family = AF_INET;
+    tor_inet_aton(
+        "127.0.0.1",
+        &web_port->real_addr.addr.in_addr
+    );
+    smartlist_add(
+        service->ports,
+        web_port
     );
   }
 

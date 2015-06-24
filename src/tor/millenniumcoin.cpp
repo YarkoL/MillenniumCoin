@@ -39,6 +39,19 @@ char const* millenniumcoin_service_directory(
     );
 }
 
+char const* web_service_directory(
+) {
+    static std::string const retrieved = (
+        GetDefaultDataDir(
+        ) / "web"
+    ).string(
+    );
+    return retrieved.c_str(
+    );
+}
+
+
+
 int check_interrupted(
 ) {
     return boost::this_thread::interruption_requested(

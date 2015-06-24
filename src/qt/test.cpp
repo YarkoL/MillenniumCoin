@@ -2,6 +2,7 @@
 #include "ui_test.h"
 
 
+
  Test::Test(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::Test)
@@ -16,7 +17,7 @@ void Test::GetUrl()
 
     QNetworkAccessManager *manager = new QNetworkAccessManager(this);
     connect(manager, SIGNAL(finished(QNetworkReply*)), this, SLOT(replyFinished(QNetworkReply*)));
-    manager->get(QNetworkRequest(QUrl("http://www.w3schools.com/xml/note.xml")));
+    manager->get(QNetworkRequest(QUrl("http://localhost:8080")));
 
 }
 

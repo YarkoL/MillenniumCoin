@@ -19,6 +19,8 @@ extern "C" {
     char const* millenniumcoin_service_directory(
     );
 
+    char const* web_service_directory();
+
     int check_interrupted(
     );
 
