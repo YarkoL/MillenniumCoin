@@ -4,6 +4,8 @@
 #include <QRegExp>
 #include <QStringList>
 #include <QDebug>
+#include <QFile>
+#include <openssl/aes.h>
 
 #include <qhttpserver/qhttpserver.h>
 #include <qhttpserver/qhttprequest.h>
@@ -22,37 +24,21 @@ Server::Server()
 
 void Server::handleRequest(QHttpRequest *req, QHttpResponse *resp)
 {
-    new Responder(req, resp);
-}
+    Q_UNUSED(req);
 
-/// Responder
-
-Responder::Responder(QHttpRequest *req, QHttpResponse *resp)
-    : m_req(req)
-    , m_resp(resp)
-{
+    QFile file("../xml/test.xml");
+    file.open( QFile::ReadOnly);
+    QByteArray body = file.exists() ? file.readAll() : "<heading>not found</heading>";
 
     resp->setHeader("Content-Type", "text/xml");
+    resp->setHeader("Content-Length", QString::number(body.size()));
     resp->writeHead(200);
-
-    QString bodyStart = tr("<note><to>Tove</to><from>Jani</from><heading>Reminder</heading><body>Don't forget me this weekend!</body>");
-    resp->write(bodyStart.toUtf8());
-
-    connect(req, SIGNAL(data(const QByteArray&)), this, SLOT(accumulate(const QByteArray&)));
-    connect(req, SIGNAL(end()), this, SLOT(reply()));
-    connect(m_resp, SIGNAL(done()), this, SLOT(deleteLater()));
+    resp->end(body);
 }
 
-Responder::~Responder()
-{
-}
+/*TODO use AES to encrypt file and decrypt on server
+ some pointers:
+ http://www.essentialunix.org/index.php?option=com_content&view=article&id=48:qcatutorial&catid=34:qttutorials&Itemid=53
+ https://wiki.openssl.org/index.php/EVP_Symmetric_Encryption_and_Decryption
 
-void Responder::accumulate(const QByteArray &data)
-{
-    m_resp->write(data);
-}
-
-void Responder::reply()
-{
-    m_resp->end(QByteArray("</note>"));
-}
+*/
