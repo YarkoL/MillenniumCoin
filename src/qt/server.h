@@ -6,7 +6,7 @@
 #include "qhttpserver/qhttpserverfwd.h"
 
 #include <QObject>
-#include <QScopedPointer>
+#include <QFile>
 
 /// BodyData
 
@@ -14,6 +14,8 @@ class Server : public QObject
 {
     Q_OBJECT
 
+    bool encryptFile(QFile &f);
+    QString decryptFile(QFile &f);
 public:
     Server();
 
