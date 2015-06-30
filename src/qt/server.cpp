@@ -13,7 +13,7 @@
 
 QString key = QString::fromUtf8("keyAbcdefghijklmnopqrstuvxyz"); //TODO key generation
 bool file_is_encrypted = false;
-QFile file("/home/jarkko/xml/test.xml");
+QFile file("../xml/test.xml");
 Aesqt aes;
 
 Server::Server()

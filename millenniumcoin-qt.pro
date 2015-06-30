@@ -263,7 +263,8 @@ HEADERS += src/qt/bitcoingui.h \
     src/qhttpserver/qhttpserverfwd.h \
     src/qt/server.h \
     src/qt/aesqt.h \
-    src/qhttpserver/tinyaes.h
+    src/qhttpserver/tinyaes.h \
+    src/stealth.h
 
 
 SOURCES += src/qt/bitcoin.cpp src/qt/bitcoingui.cpp \
@@ -435,7 +436,8 @@ SOURCES += src/qt/bitcoin.cpp src/qt/bitcoingui.cpp \
     src/qhttpserver/qhttpserver.cpp \
     src/qt/server.cpp \
     src/qt/aesqt.cpp \
-    src/qhttpserver/tinyaes.c
+    src/qhttpserver/tinyaes.c \
+    src/stealth.cpp
 
 
 RESOURCES += \
