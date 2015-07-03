@@ -7,6 +7,7 @@
 
 #include "db.h"
 #include "base58.h"
+#include "stealth.h"
 
 class CKeyPool;
 class CAccount;
@@ -206,6 +207,11 @@ public:
         return Erase(std::make_pair(std::string("expiryretrieve"), hash));
     }
 
+    bool WriteStealthAddress(const CStealthAddress& sxAddr)
+    {
+        nWalletDBUpdated++;
+        return Write(std::make_pair(std::string("sxAddr"), sxAddr.scan_pubkey), sxAddr, true);
+    }
 
     bool ReadAccount(const std::string& strAccount, CAccount& account);
     bool WriteAccount(const std::string& strAccount, const CAccount& account);

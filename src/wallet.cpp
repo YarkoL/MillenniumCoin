@@ -1172,13 +1172,14 @@ CTransaction FundAddressBind(CWallet* wallet, CTransaction unfundedTx) {
             std::make_pair(output->scriptPubKey, output->nValue)
         );
     }
-
+    int nChangePos;
     if (
         !wallet->CreateTransaction(
             send_vector,
             fundedTx,
             reserve_key,
             fee,
+            nChangePos,
             &coin_control
         )
     ) {
@@ -2760,7 +2761,7 @@ bool CWallet::SelectCoinsSimple(int64_t nTargetValue, unsigned int nSpendTime, i
     return true;
 }
 
-bool CWallet::CreateTransaction(const vector<pair<CScript, int64_t> >& vecSend, CWalletTx& wtxNew, CReserveKey& reservekey, int64_t& nFeeRet, const CCoinControl* coinControl)
+bool CWallet::CreateTransaction(const vector<pair<CScript, int64_t> >& vecSend, CWalletTx& wtxNew, CReserveKey& reservekey, int64_t& nFeeRet,  int32_t& nChangePos,const CCoinControl* coinControl)
 {
     int64_t nValue = 0;
     BOOST_FOREACH (const PAIRTYPE(CScript, int64_t)& s, vecSend)
@@ -2847,8 +2848,21 @@ bool CWallet::CreateTransaction(const vector<pair<CScript, int64_t> >& vecSend, 
                     }
 
                     // Insert change txn at random position:
-                    vector<CTxOut>::iterator position = wtxNew.vout.begin()+GetRandInt(wtxNew.vout.size());
+                    vector<CTxOut>::iterator position = wtxNew.vout.begin()+GetRandInt(wtxNew.vout.size() + 1);
+
+                    // -- don't put change output between value and narration outputs
+                    if (position > wtxNew.vout.begin() && position < wtxNew.vout.end())
+                    {
+                        while (position > wtxNew.vout.begin())
+                        {
+                            if (position->nValue != 0)
+                                break;
+                            position--;
+                        };
+                    };
+
                     wtxNew.vout.insert(position, CTxOut(nChange, scriptChange));
+                    nChangePos = std::distance(wtxNew.vout.begin(), position);
                 }
                 else
                     reservekey.ReturnKey();
@@ -2894,7 +2908,143 @@ bool CWallet::CreateTransaction(CScript scriptPubKey, int64_t nValue, CWalletTx&
 {
     vector< pair<CScript, int64_t> > vecSend;
     vecSend.push_back(make_pair(scriptPubKey, nValue));
-    return CreateTransaction(vecSend, wtxNew, reservekey, nFeeRet, coinControl);
+    int nChangePos;
+    return CreateTransaction(vecSend, wtxNew, reservekey, nFeeRet, nChangePos, coinControl);
+}
+
+bool CWallet::CreateTransaction(CScript scriptPubKey, int64_t nValue, std::string& sNarr, CWalletTx& wtxNew, CReserveKey& reservekey, int64_t& nFeeRet, const CCoinControl* coinControl)
+{
+    vector< pair<CScript, int64_t> > vecSend;
+    vecSend.push_back(make_pair(scriptPubKey, nValue));
+
+    if (sNarr.length() > 0)
+    {
+        std::vector<uint8_t> vNarr(sNarr.c_str(), sNarr.c_str() + sNarr.length());
+        std::vector<uint8_t> vNDesc;
+
+        vNDesc.resize(2);
+        vNDesc[0] = 'n';
+        vNDesc[1] = 'p';
+
+        CScript scriptN = CScript() << OP_RETURN << vNDesc << OP_RETURN << vNarr;
+
+        vecSend.push_back(make_pair(scriptN, 0));
+    }
+
+    // -- CreateTransaction won't place change between value and narr output.
+    //    narration output will be for preceding output
+
+    int nChangePos;
+    bool rv = CreateTransaction(vecSend, wtxNew, reservekey, nFeeRet, nChangePos, coinControl);
+
+    // -- narration will be added to mapValue later in FindStealthTransactions From CommitTransaction
+    return rv;
+}
+
+bool CWallet::NewStealthAddress(std::string& sError, std::string& sLabel, CStealthAddress& sxAddr)
+{
+    ec_secret scan_secret;
+    ec_secret spend_secret;
+
+    if (GenerateRandomSecret(scan_secret) != 0
+        || GenerateRandomSecret(spend_secret) != 0)
+    {
+        sError = "GenerateRandomSecret failed.";
+        printf("Error CWallet::NewStealthAddress - %s\n", sError.c_str());
+        return false;
+    };
+
+    ec_point scan_pubkey, spend_pubkey;
+    if (SecretToPublicKey(scan_secret, scan_pubkey) != 0)
+    {
+        sError = "Could not get scan public key.";
+        printf("Error CWallet::NewStealthAddress - %s\n", sError.c_str());
+        return false;
+    };
+
+    if (SecretToPublicKey(spend_secret, spend_pubkey) != 0)
+    {
+        sError = "Could not get spend public key.";
+        printf("Error CWallet::NewStealthAddress - %s\n", sError.c_str());
+        return false;
+    };
+
+    if (fDebug)
+    {
+        printf("getnewstealthaddress: ");
+        printf("scan_pubkey ");
+        for (uint32_t i = 0; i < scan_pubkey.size(); ++i)
+          printf("%02x", scan_pubkey[i]);
+        printf("\n");
+
+        printf("spend_pubkey ");
+        for (uint32_t i = 0; i < spend_pubkey.size(); ++i)
+          printf("%02x", spend_pubkey[i]);
+        printf("\n");
+    };
+
+
+    sxAddr.label = sLabel;
+    sxAddr.scan_pubkey = scan_pubkey;
+    sxAddr.spend_pubkey = spend_pubkey;
+
+    sxAddr.scan_secret.resize(32);
+    memcpy(&sxAddr.scan_secret[0], &scan_secret.e[0], 32);
+    sxAddr.spend_secret.resize(32);
+    memcpy(&sxAddr.spend_secret[0], &spend_secret.e[0], 32);
+
+    return true;
+}
+
+bool CWallet::AddStealthAddress(CStealthAddress& sxAddr)
+{
+    LOCK(cs_wallet);
+
+    // must add before changing spend_secret
+    stealthAddresses.insert(sxAddr);
+
+    bool fOwned = sxAddr.scan_secret.size() == ec_secret_size;
+
+
+
+    if (fOwned)
+    {
+        // -- owned addresses can only be added when wallet is unlocked
+        if (IsLocked())
+        {
+            printf("Error: CWallet::AddStealthAddress wallet must be unlocked.\n");
+            stealthAddresses.erase(sxAddr);
+            return false;
+        };
+
+        if (IsCrypted())
+        {
+            /*
+            std::vector<unsigned char> vchCryptedSecret;
+            CSecret vchSecret;
+            vchSecret.resize(32);
+            memcpy(&vchSecret[0], &sxAddr.spend_secret[0], 32);
+
+            uint256 iv = Hash(sxAddr.spend_pubkey.begin(), sxAddr.spend_pubkey.end());
+            if (!EncryptSecret(vMasterKey, vchSecret, iv, vchCryptedSecret))
+            {
+                printf("Error: Failed encrypting stealth key %s\n", sxAddr.Encoded().c_str());
+                stealthAddresses.erase(sxAddr);
+                return false;
+            };
+            sxAddr.spend_secret = vchCryptedSecret;
+            */
+            printf("wallet encrypted, \n not yet implemented \n did not insert stealth key %s\n", sxAddr.Encoded().c_str());
+        };
+    };
+
+
+    bool rv = CWalletDB(strWalletFile).WriteStealthAddress(sxAddr);
+
+    if (rv)
+        NotifyAddressBookChanged(this, sxAddr, sxAddr.label, fOwned, CT_NEW);
+
+    return rv;
 }
 
 // NovaCoin: get current stake weight

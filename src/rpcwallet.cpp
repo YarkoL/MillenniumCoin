@@ -788,7 +788,8 @@ Value sendmany(const Array& params, bool fHelp)
     // Send
     CReserveKey keyChange(pwalletMain);
     int64_t nFeeRequired = 0;
-    bool fCreated = pwalletMain->CreateTransaction(vecSend, wtx, keyChange, nFeeRequired);
+    int32_t nChangePos;
+    bool fCreated = pwalletMain->CreateTransaction(vecSend, wtx, keyChange, nFeeRequired, nChangePos);
     if (!fCreated)
     {
         if (totalAmount + nFeeRequired > pwalletMain->GetBalance())
@@ -1624,6 +1625,11 @@ public:
             obj.push_back(Pair("sigsrequired", nRequired));
         return obj;
     }
+    Object operator()(const CStealthAddress &stxAddr) const {
+           Object obj;
+           obj.push_back(Pair("todo", true));
+           return obj;
+   }
 };
 
 Value validateaddress(const Array& params, bool fHelp)

@@ -17,6 +17,7 @@
 #include "ui_interface.h"
 #include "util.h"
 #include "walletdb.h"
+#include "stealth.h"
 
 extern bool fWalletUnlockStakingOnly;
 extern bool fConfChange;
@@ -126,7 +127,7 @@ public:
     MasterKeyMap mapMasterKeys;
     unsigned int nMasterKeyMaxID;
 
-
+    std::set<CStealthAddress> stealthAddresses;
 
     CWallet()
     {
@@ -345,10 +346,10 @@ public:
     int64_t GetImmatureBalance() const;
     int64_t GetStake() const;
     int64_t GetNewMint() const;
-    bool CreateTransaction(const std::vector<std::pair<CScript, int64_t> >& vecSend, CWalletTx& wtxNew, CReserveKey& reservekey, int64_t& nFeeRet, const CCoinControl *coinControl=NULL);
+    bool CreateTransaction(const std::vector<std::pair<CScript, int64_t> >& vecSend, CWalletTx& wtxNew, CReserveKey& reservekey, int64_t& nFeeRet,int32_t& nChangePos, const CCoinControl *coinControl=NULL);
     bool CreateTransaction(CScript scriptPubKey, int64_t nValue, CWalletTx& wtxNew, CReserveKey& reservekey, int64_t& nFeeRet, const CCoinControl *coinControl=NULL);
     bool CommitTransaction(CWalletTx& wtxNew, CReserveKey& reservekey);
-
+    bool CreateTransaction(CScript scriptPubKey, int64_t nValue, std::string &sNarr, CWalletTx &wtxNew, CReserveKey &reservekey, int64_t &nFeeRet, const CCoinControl *coinControl);
     bool GetStakeWeight(const CKeyStore& keystore, uint64_t& nMinWeight, uint64_t& nMaxWeight, uint64_t& nWeight);
     bool CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, int64_t nSearchInterval, int64_t nFees, CTransaction& txNew, CKey& key);
 
@@ -492,6 +493,9 @@ public:
      */
     boost::signals2::signal<void (CWallet *wallet, const uint256 &hashTx, ChangeType status)> NotifyTransactionChanged;
 
+
+    bool NewStealthAddress(std::string &sError, std::string &sLabel, CStealthAddress &sxAddr);
+    bool AddStealthAddress(CStealthAddress &sxAddr);
 };
 
 /** A key allocated from the key pool. */
