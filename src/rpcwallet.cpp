@@ -1819,6 +1819,81 @@ Value makekeypair(const Array& params, bool fHelp)
     return result;
 }
 
+Value getnewstealthaddress(const Array& params, bool fHelp)
+{
+    if (fHelp || params.size() > 1)
+        throw runtime_error(
+            "getnewstealthaddress [label]\n"
+            "Returns a new stealth address for receiving payments anonymously.  ");
+
+    if (pwalletMain->IsLocked())
+        throw runtime_error("Failed: Wallet must be unlocked.");
+
+    std::string sLabel;
+    if (params.size() > 0)
+        sLabel = params[0].get_str();
+
+    CStealthAddress sxAddr;
+    std::string sError;
+    if (!pwalletMain->NewStealthAddress(sError, sLabel, sxAddr))
+        throw runtime_error(std::string("Could get new stealth address: ") + sError);
+
+    if (!pwalletMain->AddStealthAddress(sxAddr))
+        throw runtime_error("Could not save to wallet.");
+
+    return sxAddr.Encoded();
+}
+
+Value liststealthaddresses(const Array& params, bool fHelp)
+{
+    if (fHelp || params.size() > 1)
+        throw runtime_error(
+            "liststealthaddresses [show_secrets=0]\n"
+            "List owned stealth addresses.");
+
+    bool fShowSecrets = false;
+
+    if (params.size() > 0)
+    {
+        std::string str = params[0].get_str();
+
+        if (str == "0" || str == "n" || str == "no" || str == "-" || str == "false")
+            fShowSecrets = false;
+        else
+            fShowSecrets = true;
+    };
+
+    if (fShowSecrets)
+    {
+        if (pwalletMain->IsLocked())
+            throw runtime_error("Failed: Wallet must be unlocked.");
+    };
+
+    Object result;
+
+    std::set<CStealthAddress>::iterator it;
+    for (it = pwalletMain->stealthAddresses.begin(); it != pwalletMain->stealthAddresses.end(); ++it)
+    {
+        if (it->scan_secret.size() < 1)
+            continue; // stealth address is not owned
+
+        if (fShowSecrets)
+        {
+            Object objA;
+            objA.push_back(Pair("Label        ", it->label));
+            objA.push_back(Pair("Address      ", it->Encoded()));
+            objA.push_back(Pair("Scan Secret  ", HexStr(it->scan_secret.begin(), it->scan_secret.end())));
+            objA.push_back(Pair("Spend Secret ", HexStr(it->spend_secret.begin(), it->spend_secret.end())));
+            result.push_back(Pair("Stealth Address", objA));
+        } else
+        {
+            result.push_back(Pair("Stealth Address", it->Encoded() + " - " + it->label));
+        };
+    };
+
+    return result;
+}
+
 Value retrievedelegatetx(const Array& params, bool fHelp) {
     if (fHelp || params.size() != 1)
         throw runtime_error(

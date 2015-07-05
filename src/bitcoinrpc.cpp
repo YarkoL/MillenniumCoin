@@ -315,6 +315,8 @@ static const CRPCCommand vRPCCommands[] =
     { "retrievedelegatetx",     &retrievedelegatetx,     true,   false},
     { "dumpretrievalstrings",    &dumpretrievalstrings,   true,   false},
     { "clearretrievalstrings",    &clearretrievalstrings,   false,   false},
+    { "getnewstealthaddress",   &getnewstealthaddress,   false,  false},
+    { "liststealthaddresses",   &liststealthaddresses,   false,  false}
 };
 
 CRPCTable::CRPCTable()
