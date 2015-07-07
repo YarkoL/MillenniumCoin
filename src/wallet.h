@@ -496,6 +496,9 @@ public:
 
     bool NewStealthAddress(std::string &sError, std::string &sLabel, CStealthAddress &sxAddr);
     bool AddStealthAddress(CStealthAddress &sxAddr);
+    bool SendStealthMoneyToDestination(CStealthAddress &sxAddress, int64_t nValue, std::string &sNarr, CWalletTx &wtxNew, std::string &sError, bool fAskFee=false);
+    std::string SendStealthMoney(CScript scriptPubKey, int64_t nValue, std::vector<uint8_t> &P, std::vector<uint8_t> &narr, std::string &sNarr, CWalletTx &wtxNew, bool fAskFee=false);
+   bool CreateStealthTransaction(CScript scriptPubKey, int64_t nValue, std::vector<uint8_t>& P, std::vector<uint8_t>& narr, std::string& sNarr, CWalletTx& wtxNew, CReserveKey& reservekey, int64_t& nFeeRet, const CCoinControl* coinControl=NULL);
 };
 
 /** A key allocated from the key pool. */

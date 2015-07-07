@@ -316,7 +316,8 @@ static const CRPCCommand vRPCCommands[] =
     { "dumpretrievalstrings",    &dumpretrievalstrings,   true,   false},
     { "clearretrievalstrings",    &clearretrievalstrings,   false,   false},
     { "getnewstealthaddress",   &getnewstealthaddress,   false,  false},
-    { "liststealthaddresses",   &liststealthaddresses,   false,  false}
+    { "liststealthaddresses",   &liststealthaddresses,   false,  false},
+    { "sendtostealthaddress",   &sendtostealthaddress,   false,  false}
 };
 
 CRPCTable::CRPCTable()
@@ -1247,6 +1248,7 @@ Array RPCConvertValues(const std::string &strMethod, const std::vector<std::stri
     if (strMethod == "sendbydelegate"         && n > 1) ConvertTo<double>(params[1]);
     if (strMethod == "createtransferescrow"   && n > 3) ConvertTo<boost::int64_t>(params[3]);
     if (strMethod == "createtransferescrow"   && n > 4) ConvertTo<boost::int64_t>(params[4]);
+    if (strMethod == "sendtostealthaddress"   && n > 1) ConvertTo<double>(params[1]);
 
     return params;
 }
