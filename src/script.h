@@ -19,7 +19,7 @@
 #include "stealth.h"
 
 typedef std::vector<unsigned char> valtype;
-
+static const unsigned int MAX_OP_RETURN_RELAY = 48;      // bytes
 class CTransaction;
 
 /** Signature hash types/flags */
@@ -52,6 +52,7 @@ enum txnouttype
     TX_PUBKEYHASH,
     TX_SCRIPTHASH,
     TX_MULTISIG,
+    TX_REFERENCE
 };
 
 class CNoDestination {
@@ -214,6 +215,7 @@ enum opcodetype
     OP_NUMERIC = 0xf9,
     OP_SMALLINTEGER = 0xfa,
     OP_PUBKEYS = 0xfb,
+    OP_SMALLDATA = 0xfc,
     OP_PUBKEYHASH = 0xfd,
     OP_PUBKEY = 0xfe,
 

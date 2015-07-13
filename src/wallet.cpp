@@ -2920,13 +2920,8 @@ bool CWallet::CreateTransaction(CScript scriptPubKey, int64_t nValue, std::strin
     if (sNarr.length() > 0)
     {
         std::vector<uint8_t> vNarr(sNarr.c_str(), sNarr.c_str() + sNarr.length());
-        std::vector<uint8_t> vNDesc;
 
-        vNDesc.resize(2);
-        vNDesc[0] = 'n';
-        vNDesc[1] = 'p';
-
-        CScript scriptN = CScript() << OP_RETURN << vNDesc << OP_RETURN << vNarr;
+        CScript scriptN = CScript() << OP_RETURN  << vNarr;
 
         vecSend.push_back(make_pair(scriptN, 0));
     }
