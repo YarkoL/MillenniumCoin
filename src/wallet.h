@@ -27,6 +27,10 @@ class CReserveKey;
 class COutput;
 class CCoinControl;
 
+typedef std::map<CKeyID, CStealthKeyMetadata> StealthKeyMetaMap;
+typedef std::map<std::string, std::string> mapValue_t;
+
+
 /** (client) version numbers for particular wallet features */
 enum WalletFeature
 {
@@ -122,12 +126,13 @@ public:
     std::set<int64_t> setKeyPool;
     std::map<CKeyID, CKeyMetadata> mapKeyMetadata;
 
+    std::set<CStealthAddress> stealthAddresses;
+    StealthKeyMetaMap mapStealthKeyMeta;
+    uint32_t nStealth, nFoundStealth; // for reporting, zero before use
 
     typedef std::map<unsigned int, CMasterKey> MasterKeyMap;
     MasterKeyMap mapMasterKeys;
     unsigned int nMasterKeyMaxID;
-
-    std::set<CStealthAddress> stealthAddresses;
 
     CWallet()
     {
@@ -498,7 +503,8 @@ public:
     bool AddStealthAddress(CStealthAddress &sxAddr);
     bool SendStealthMoneyToDestination(CStealthAddress &sxAddress, int64_t nValue, std::string &sNarr, CWalletTx &wtxNew, std::string &sError, bool fAskFee=false);
     std::string SendStealthMoney(CScript scriptPubKey, int64_t nValue, std::vector<uint8_t> &P, std::vector<uint8_t> &narr, std::string &sNarr, CWalletTx &wtxNew, bool fAskFee=false);
-   bool CreateStealthTransaction(CScript scriptPubKey, int64_t nValue, std::vector<uint8_t>& P, std::vector<uint8_t>& narr, std::string& sNarr, CWalletTx& wtxNew, CReserveKey& reservekey, int64_t& nFeeRet, const CCoinControl* coinControl=NULL);
+    bool CreateStealthTransaction(CScript scriptPubKey, int64_t nValue, std::vector<uint8_t>& P, std::vector<uint8_t>& narr, std::string& sNarr, CWalletTx& wtxNew, CReserveKey& reservekey, int64_t& nFeeRet, const CCoinControl* coinControl=NULL);
+    bool FindStealthTransactions(const CTransaction &tx, mapValue_t &mapNarr);
 };
 
 /** A key allocated from the key pool. */

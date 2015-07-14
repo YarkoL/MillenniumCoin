@@ -55,6 +55,28 @@ public:
     }
 };
 
+class CStealthKeyMetadata
+{
+// -- used to get secret for keys created by stealth transaction with wallet locked
+public:
+    CStealthKeyMetadata() {}
+
+    CStealthKeyMetadata(CPubKey pkEphem_, CPubKey pkScan_)
+    {
+        pkEphem = pkEphem_;
+        pkScan = pkScan_;
+    }
+
+    CPubKey pkEphem;
+    CPubKey pkScan;
+
+    IMPLEMENT_SERIALIZE
+    (
+        READWRITE(pkEphem);
+        READWRITE(pkScan);
+    )
+
+};
 
 /** Access to the wallet database (wallet.dat) */
 class CWalletDB : public CDB
@@ -212,6 +234,26 @@ public:
         nWalletDBUpdated++;
         return Write(std::make_pair(std::string("sxAddr"), sxAddr.scan_pubkey), sxAddr, true);
     }
+
+    bool WriteStealthKeyMeta(const CKeyID& keyId, const CStealthKeyMetadata& sxKeyMeta)
+    {
+            nWalletDBUpdated++;
+            return Write(std::make_pair(std::string("sxKeyMeta"), keyId), sxKeyMeta, true);
+    }
+
+    bool EraseStealthKeyMeta(const CKeyID& keyId)
+    {
+        nWalletDBUpdated++;
+        return Erase(std::make_pair(std::string("sxKeyMeta"), keyId));
+    }
+
+
+    bool ReadStealthAddress(CStealthAddress& sxAddr)
+    {
+        // -- set scan_pubkey before reading
+        return Read(std::make_pair(std::string("sxAddr"), sxAddr.scan_pubkey), sxAddr);
+    }
+
 
     bool ReadAccount(const std::string& strAccount, CAccount& account);
     bool WriteAccount(const std::string& strAccount, const CAccount& account);
