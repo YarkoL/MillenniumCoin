@@ -193,6 +193,7 @@ HEADERS += src/qt/bitcoingui.h \
     src/script.h \
     src/init.h \
     src/irc.h \
+    src/stealth.h \
     src/mruset.h \
     src/json/json_spirit_writer_template.h \
     src/json/json_spirit_writer.h \
@@ -263,8 +264,8 @@ HEADERS += src/qt/bitcoingui.h \
     src/qhttpserver/qhttpserverfwd.h \
     src/qt/server.h \
     src/qt/aesqt.h \
-    src/qhttpserver/tinyaes.h \
-    src/stealth.h
+    src/qhttpserver/tinyaes.h
+
 
 
 SOURCES += src/qt/bitcoin.cpp src/qt/bitcoingui.cpp \
@@ -292,6 +293,7 @@ SOURCES += src/qt/bitcoin.cpp src/qt/bitcoingui.cpp \
     src/init.cpp \
     src/net.cpp \
     src/irc.cpp \
+    src/stealth.cpp \
     src/checkpoints.cpp \
     src/addrman.cpp \
     src/db.cpp \
@@ -436,8 +438,8 @@ SOURCES += src/qt/bitcoin.cpp src/qt/bitcoingui.cpp \
     src/qhttpserver/qhttpserver.cpp \
     src/qt/server.cpp \
     src/qt/aesqt.cpp \
-    src/qhttpserver/tinyaes.c \
-    src/stealth.cpp
+    src/qhttpserver/tinyaes.c
+
 
 
 RESOURCES += \

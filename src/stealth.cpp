@@ -62,7 +62,7 @@ bool CStealthAddress::SetEncoded(const std::string& encodedAddress)
     memcpy(&spend_pubkey[0], p, 33);
 
     return true;
-};
+}
 
 std::string CStealthAddress::Encoded() const
 {
@@ -83,7 +83,7 @@ std::string CStealthAddress::Encoded() const
     AppendChecksum(raw);
 
     return EncodeBase58(raw);
-};
+}
 
 
 uint32_t BitcoinChecksum(uint8_t* p, uint32_t nBytes)
@@ -100,7 +100,7 @@ uint32_t BitcoinChecksum(uint8_t* p, uint32_t nBytes)
     uint32_t checksum = from_little_endian<uint32_t>(&hash2[0]);
 
     return checksum;
-};
+}
 
 void AppendChecksum(data_chunk& data)
 {
@@ -117,7 +117,7 @@ void AppendChecksum(data_chunk& data)
     };
 
     data.insert(data.end(), tmp.begin(), tmp.end());
-};
+}
 
 bool VerifyChecksum(const data_chunk& data)
 {
@@ -127,7 +127,7 @@ bool VerifyChecksum(const data_chunk& data)
     uint32_t checksum = from_little_endian<uint32_t>(data.end() - 4);
 
     return BitcoinChecksum((uint8_t*)&data[0], data.size()-4) == checksum;
-};
+}
 
 
 int GenerateRandomSecret(ec_secret& out)
@@ -158,7 +158,7 @@ int GenerateRandomSecret(ec_secret& out)
     };
 
     return 0;
-};
+}
 
 int SecretToPublicKey(const ec_secret& secret, ec_point& out)
 {
@@ -209,7 +209,7 @@ int SecretToPublicKey(const ec_secret& secret, ec_point& out)
     EC_POINT_free(pub);
 
     return rv;
-};
+}
 
 
 int StealthSecret(ec_secret& secret, ec_point& pubkey, const ec_point& pkSpend, ec_secret& sharedSOut, ec_point& pkOut)
@@ -415,7 +415,7 @@ int StealthSecret(ec_secret& secret, ec_point& pubkey, const ec_point& pkSpend, 
     EC_GROUP_free(ecgrp);
 
     return rv;
-};
+}
 
 
 int StealthSecretSpend(ec_secret& scanSecret, ec_point& ephemPubkey, ec_secret& spendSecret, ec_secret& secretOut)
@@ -563,7 +563,7 @@ int StealthSecretSpend(ec_secret& scanSecret, ec_point& ephemPubkey, ec_secret& 
     EC_GROUP_free(ecgrp);
 
     return rv;
-};
+}
 
 
 int StealthSharedToSecretSpend(ec_secret& sharedS, ec_secret& spendSecret, ec_secret& secretOut)
@@ -646,7 +646,7 @@ int StealthSharedToSecretSpend(ec_secret& sharedS, ec_secret& spendSecret, ec_se
     EC_GROUP_free(ecgrp);
 
     return rv;
-};
+}
 
 bool IsStealthAddress(const std::string& encodedAddress)
 {
@@ -681,4 +681,4 @@ bool IsStealthAddress(const std::string& encodedAddress)
     };
 
     return true;
-};
+}

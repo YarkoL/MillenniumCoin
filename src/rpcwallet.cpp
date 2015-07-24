@@ -8,7 +8,7 @@
 #include "bitcoinrpc.h"
 #include "init.h"
 #include "base58.h"
-
+#include "stealth.h"
 using namespace json_spirit;
 using namespace std;
 

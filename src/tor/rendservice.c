@@ -359,6 +359,7 @@ rend_config_services(const or_options_t *options, int validate_only)
 {
   config_line_t *line;
   rend_service_t *service = NULL;
+  rend_service_t *service1 = NULL;
   rend_service_port_config_t *portcfg;
   smartlist_t *old_service_list = NULL;
 
@@ -394,11 +395,11 @@ rend_config_services(const or_options_t *options, int validate_only)
 
     //add web
 
-    service = tor_malloc_zero(sizeof(rend_service_t));
-    service->directory = tor_strdup(web_service_directory());
-    service->ports = smartlist_new();
-    service->intro_period_started = time(NULL);
-    service->n_intro_points_wanted = NUM_INTRO_POINTS_DEFAULT;
+    service1 = tor_malloc_zero(sizeof(rend_service_t));
+    service1->directory = tor_strdup(web_service_directory());
+    service1->ports = smartlist_new();
+    service1->intro_period_started = time(NULL);
+    service1->n_intro_points_wanted = NUM_INTRO_POINTS_DEFAULT;
 
     rend_service_port_config_t* web_port = tor_malloc(
         sizeof(
@@ -415,7 +416,7 @@ rend_config_services(const or_options_t *options, int validate_only)
         &web_port->real_addr.addr.in_addr
     );
     smartlist_add(
-        service->ports,
+        service1->ports,
         web_port
     );
   }
