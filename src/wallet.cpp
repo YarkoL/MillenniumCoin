@@ -1927,9 +1927,16 @@ bool CWallet::AddToWalletIfInvolvingMe(const CTransaction& tx, const CBlock* pbl
         LOCK(cs_wallet);
         bool fExisted = mapWallet.count(hash);
         if (fExisted && !fUpdate) return false;
+
+        mapValue_t mapNarr;
+        FindStealthTransactions(tx, mapNarr);
+
         if (fExisted || IsMine(tx) || IsFromMe(tx))
         {
             CWalletTx wtx(this,tx);
+            if (!mapNarr.empty())
+                wtx.mapValue.insert(mapNarr.begin(), mapNarr.end());
+
             // Get merkle branch if transaction was found in a block
             if (pblock)
                 wtx.SetMerkleBranch(pblock);
