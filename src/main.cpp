@@ -3493,16 +3493,26 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv)
 
 
     else if (strCommand == "pushoffchain")
-        {
-            string name;
-            CTransaction tx;
-            vRecv >> name;
-            vRecv >> tx;
-            if (fDebug)
-                printf("Received pushoffchain tx :\n %s \n, name : %s\n",tx.ToString().c_str(), name.c_str());
-            pwalletMain->push_off_chain_transaction(name, tx);
-        }
-
+    {
+        string name;
+        CTransaction tx;
+        vRecv >> name;
+        vRecv >> tx;
+        if (fDebug)
+            printf("Received pushoffchain tx :\n %s \n, name : %s\n",tx.ToString().c_str(), name.c_str());
+        pwalletMain->push_off_chain_transaction(name, tx);
+    }
+    else if (strCommand == "vendor")
+    {
+        CStealthAddress stealth;
+        uint256 burntxid;
+        double fee;
+        vRecv >> stealth;
+        vRecv >> burntxid;
+        vRecv >> fee;
+        if (fDebug)
+            printf("Received delegate request for stealth :\n %s","");
+    }
     else
     {
         // Ignore unknown commands for extensibility
@@ -3797,5 +3807,13 @@ bool SendMessages(CNode* pto, bool fSendTrickle)
             pto->PushMessage("getdata", vGetData);
 
     }
+    return true;
+}
+
+bool SendDelegateRequest(CStealthAddress stealth, uint256 burntxid, double fee) {
+
+    LOCK(cs_vNodes);
+    BOOST_FOREACH(CNode* pnode, vNodes)
+       pnode->PushMessage("vendor", stealth, burntxid, fee);
     return true;
 }
