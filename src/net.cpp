@@ -143,12 +143,11 @@ CAddress GetLocalAddress(const CNetAddr *paddrPeer)
         ret.nServices = nLocalServices;
         ret.nTime = GetAdjustedTime();
         if (ret.IsTor() && pwalletMain) {
-            double const fraction = nAdvertisedBalance/100.0;
-            ret.advertised_balance = (int64_t)(fraction * pwalletMain->GetBalance());
+            ret.advertised_balance = pwalletMain->GetAdvertisedBalance();
         }
     }
     return ret;
-    }
+}
 
 
 bool RecvLine(SOCKET hSocket, string& strLine)

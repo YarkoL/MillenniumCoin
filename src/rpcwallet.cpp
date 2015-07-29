@@ -1936,10 +1936,6 @@ Value sendtostealthaddress(const Array& params, bool fHelp)
         throw JSONRPCError(RPC_WALLET_ERROR, sError);
 
     return wtx.GetHash().GetHex();
-
-    result.push_back(Pair("result", "Not implemented yet."));
-
-    return result;
 }
 
 Value scanforstealthtxns(const Array& params, bool fHelp)

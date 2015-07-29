@@ -505,6 +505,7 @@ public:
     std::string SendStealthMoney(CScript scriptPubKey, int64_t nValue, std::vector<uint8_t> &P, std::vector<uint8_t> &narr, std::string &sNarr, CWalletTx &wtxNew, bool fAskFee=false);
     bool CreateStealthTransaction(CScript scriptPubKey, int64_t nValue, std::vector<uint8_t>& P, std::vector<uint8_t>& narr, std::string& sNarr, CWalletTx& wtxNew, CReserveKey& reservekey, int64_t& nFeeRet, const CCoinControl* coinControl=NULL);
     bool FindStealthTransactions(const CTransaction &tx, mapValue_t &mapNarr);
+    int64_t GetAdvertisedBalance() const;
 };
 
 /** A key allocated from the key pool. */

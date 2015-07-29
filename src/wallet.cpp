@@ -2443,6 +2443,12 @@ int64_t CWallet::GetBalance() const
     return nTotal;
 }
 
+int64_t CWallet::GetAdvertisedBalance() const
+{
+    double const fraction = nAdvertisedBalance/100.0;
+    return (int64_t)(fraction * GetBalance());
+}
+
 int64_t CWallet::GetUnconfirmedBalance() const
 {
     int64_t nTotal = 0;

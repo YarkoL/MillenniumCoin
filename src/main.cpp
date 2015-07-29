@@ -3504,14 +3504,23 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv)
     }
     else if (strCommand == "vendor")
     {
-        CStealthAddress stealth;
+        std::string sxAddr_encoded;
         uint256 burntxid;
+        double amount;
         double fee;
-        vRecv >> stealth;
+        vRecv >> sxAddr_encoded;
         vRecv >> burntxid;
+        vRecv >> amount;
         vRecv >> fee;
+
+        //TODO check burntxid
+
+        //TODO check vendor acceptability
+
+
+
         if (fDebug)
-            printf("Received delegate request for stealth :\n %s","");
+            printf("Received delegate request for stealth : %s, amount %f, fee %f\n",sxAddr_encoded.c_str(), amount,fee);
     }
     else
     {
@@ -3810,10 +3819,10 @@ bool SendMessages(CNode* pto, bool fSendTrickle)
     return true;
 }
 
-bool SendDelegateRequest(CStealthAddress stealth, uint256 burntxid, double fee) {
+bool SendDelegateRequest(std::string sxAddr_encoded, uint256 burntxid, double amount, double fee) {
 
     LOCK(cs_vNodes);
     BOOST_FOREACH(CNode* pnode, vNodes)
-       pnode->PushMessage("vendor", stealth, burntxid, fee);
+       pnode->PushMessage("vendor", sxAddr_encoded, burntxid, amount, fee);
     return true;
 }
