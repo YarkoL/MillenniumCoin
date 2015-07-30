@@ -1385,6 +1385,39 @@ bool CWallet::get_delegate_nonce(
     return true;
 }
 
+//delegate set
+bool CWallet::init_delegate_set(const uint64_t nonce, int expiry) {
+    if (mapDelegate.end() != mapDelegate.find(nonce)) {
+        return false;
+    }
+    std::set<std::string> delegateSet;
+    std::string strExpiry = boost::lexical_cast<std::string>(expiry);
+    delegateSet.insert(strExpiry);
+    mapDelegate[nonce] = delegateSet;
+    return true;
+}
+
+bool CWallet::add_to_delegate_map(const uint64_t nonce, const std::string data) {
+    if (mapDelegate.end() == mapDelegate.find(nonce)) {
+        return false;
+    }
+    std::set<std::string> delegateSet = mapDelegate.at(nonce);
+    delegateSet.insert(data);
+    return true;
+}
+
+bool CWallet::find_from_delegate_map(const uint64_t nonce, const string addr) {
+    if (mapDelegate.end() == mapDelegate.find(nonce)) {
+        return false;
+    }
+    std::set<std::string> delegateSet = mapDelegate.at(nonce);
+    if(delegateSet.find(addr) != delegateSet.end()){
+        return true;
+    }
+    return false;
+}
+
+
 //retrieval functions
 
 void CWallet::add_to_retrieval_string_in_nonce_map(uint64_t& nonce, string const& retrieve, bool isEscrow) {

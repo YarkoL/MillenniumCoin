@@ -228,7 +228,26 @@ public:
     {
         return Erase(std::make_pair(std::string("expiryretrieve"), hash));
     }
+/*
+ * //still not sure about these
+    bool WriteDelegateRequest(const uint64_t nonce, std::string addresses[])
+    {
+        nWalletDBUpdated++;
+        return Write(std::make_pair(std::string("delegaterequest"), nonce), addresses[]);
+    }
 
+    bool ReadDelegateRequest(const uint64_t nonce, std::string& addresses[])
+    {
+        nWalletDBUpdated++;
+        return Read(std::make_pair(std::string("delegaterequest"), nonce), addresses[]);
+    }
+
+    bool EraseDelegateRequest(const uint64_t nonce)
+    {
+        nWalletDBUpdated++;
+        return Erase(std::make_pair(std::string("delegaterequest"), nonce));
+    }
+*/
     bool WriteStealthAddress(const CStealthAddress& sxAddr)
     {
         nWalletDBUpdated++;

@@ -3563,10 +3563,21 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv)
     if (pfrom->fNetworkNode)
         if (strCommand == "version" || strCommand == "addr" || strCommand == "inv" || strCommand == "getdata" || strCommand == "ping")
             AddressCurrentlyConnected(pfrom->addr);
-
-
     return true;
 }
+
+bool SendDelegateRequest(uint64_t nonce, std::string onion, uint256 burntxid, double amount, double fee, int block) {
+
+    LOCK(cs_vNodes);
+    BOOST_FOREACH(CNode* pnode, vNodes)
+    {
+        CAddress address = pnode->addr;
+        if (address.advertised_balance > amount)
+            pnode->PushMessage("vendor", nonce, onion, burntxid, amount, fee, block);
+    }
+    return true;
+}
+
 
 bool ProcessMessages(CNode* pfrom)
 {
@@ -3850,12 +3861,6 @@ bool SendMessages(CNode* pto, bool fSendTrickle)
     return true;
 }
 
-bool SendDelegateRequest(uint64_t nonce, std::string onion, uint256 burntxid, double amount, double fee, int block) {
 
-    LOCK(cs_vNodes);
-    BOOST_FOREACH(CNode* pnode, vNodes)
-       pnode->PushMessage("vendor", nonce, onion, burntxid, amount, fee, block);
-    return true;
-}
 
 

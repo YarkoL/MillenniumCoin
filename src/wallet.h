@@ -165,6 +165,8 @@ public:
     std::map<uint64_t, std::list<std::string> > mapEscrow;
     std::map<uint64_t, std::list<std::string> > mapExpiry;
 
+    std::map<uint64_t, std::set<std::string> > mapDelegate;
+
     CPubKey vchDefaultKey;
     int64_t nTimeFirstKey;
 
@@ -506,6 +508,10 @@ public:
     bool CreateStealthTransaction(CScript scriptPubKey, int64_t nValue, std::vector<uint8_t>& P, std::vector<uint8_t>& narr, std::string& sNarr, CWalletTx& wtxNew, CReserveKey& reservekey, int64_t& nFeeRet, const CCoinControl* coinControl=NULL);
     bool FindStealthTransactions(const CTransaction &tx, mapValue_t &mapNarr);
     int64_t GetAdvertisedBalance() const;
+
+    bool add_to_delegate_map(const uint64_t nonce, const std::string data);
+    bool find_from_delegate_map(const uint64_t nonce, const std::string addr);
+    bool init_delegate_set(const uint64_t nonce, int expiry);
 };
 
 /** A key allocated from the key pool. */
