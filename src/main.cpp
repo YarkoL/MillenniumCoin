@@ -3504,23 +3504,54 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv)
     }
     else if (strCommand == "vendor")
     {
-        std::string sxAddr_encoded;
+        uint64_t nonce;
+        std::string onion;
         uint256 burntxid;
         double amount;
         double fee;
-        vRecv >> sxAddr_encoded;
+        int block_expiry;
+        vRecv >> nonce;
+        vRecv >> onion;
         vRecv >> burntxid;
         vRecv >> amount;
         vRecv >> fee;
+        vRecv >> block_expiry;
+        if (fDebug)
+            printf("Received delegate request from : %s, amount %f, fee %f\n",onion.c_str(), amount,fee);
+        //TODO check expiry
 
         //TODO check burntxid
 
         //TODO check vendor acceptability
 
+        //if we're ok with the vendor, insert into db
 
+        //broadcast our willingness to become a delegate
+        if (pwalletMain->GetAdvertisedBalance() > amount + 5) {
+            CPubKey newKey;
+            if (!pwalletMain->GetKeyFromPool(newKey, false))
+                throw std::runtime_error ("Error: Keypool ran out, please call keypoolrefill first");
+            CKeyID keyID = newKey.GetID();
 
-        if (fDebug)
-            printf("Received delegate request for stealth : %s, amount %f, fee %f\n",sxAddr_encoded.c_str(), amount,fee);
+            std::string milAddr = CBitcoinAddress(keyID).ToString();
+            LOCK(cs_vNodes);
+            BOOST_FOREACH(CNode* pnode, vNodes)
+               pnode->PushMessage("delegate", nonce, milAddr);
+        }
+    }
+    else if (strCommand == "delegate")
+    {
+        uint64_t nonce;
+        std::string milAddr;
+        vRecv >> nonce;
+        vRecv >> milAddr;
+
+        //TODO check if delegate request in db
+
+        //TODO add address into db if we haven't already
+
+        //TODO ok, this was new entry, relay
+
     }
     else
     {
@@ -3819,10 +3850,12 @@ bool SendMessages(CNode* pto, bool fSendTrickle)
     return true;
 }
 
-bool SendDelegateRequest(std::string sxAddr_encoded, uint256 burntxid, double amount, double fee) {
+bool SendDelegateRequest(uint64_t nonce, std::string onion, uint256 burntxid, double amount, double fee, int block) {
 
     LOCK(cs_vNodes);
     BOOST_FOREACH(CNode* pnode, vNodes)
-       pnode->PushMessage("vendor", sxAddr_encoded, burntxid, amount, fee);
+       pnode->PushMessage("vendor", nonce, onion, burntxid, amount, fee, block);
     return true;
 }
+
+

@@ -130,8 +130,7 @@ const CBlockIndex* GetLastBlockIndex(const CBlockIndex* pindex, bool fProofOfSta
 void StakeMiner(CWallet *pwallet);
 void ResendWalletTransactions(bool fForce = false);
 
-bool SendDelegateRequest(CStealthAddress stealth, uint256 hash, double fee);
-
+bool SendDelegateRequest(uint64_t nonce, std::string onion, uint256 burntxid, double amount, double maxfee, int block);
 
 
 
