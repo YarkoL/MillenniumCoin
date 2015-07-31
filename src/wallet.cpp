@@ -1397,7 +1397,19 @@ bool CWallet::init_delegate_set(const uint64_t nonce, int expiry) {
     return true;
 }
 
-bool CWallet::add_to_delegate_map(const uint64_t nonce, const std::string data) {
+void CWallet::erase_delegate_set(const uint64_t nonce) {
+    if (fDebug) {
+            std::set<std::string> delegateSet = mapDelegate.at(nonce);
+            printf("Deleting delegate listing with these items:\n");
+            std::set<std::string>::iterator it;
+            for (it = delegateSet.begin(); it != delegateSet.end(); ++it){
+                printf("%s\n", (*it).c_str());
+        }
+    }
+    mapDelegate.erase(nonce);
+}
+
+bool CWallet::add_to_delegate_set(const uint64_t nonce, const std::string data) {
     if (mapDelegate.end() == mapDelegate.find(nonce)) {
         return false;
     }
@@ -1406,7 +1418,7 @@ bool CWallet::add_to_delegate_map(const uint64_t nonce, const std::string data) 
     return true;
 }
 
-bool CWallet::find_from_delegate_map(const uint64_t nonce, const string addr) {
+bool CWallet::find_from_delegate_set(const uint64_t nonce, const std::string addr) {
     if (mapDelegate.end() == mapDelegate.find(nonce)) {
         return false;
     }
@@ -1415,6 +1427,25 @@ bool CWallet::find_from_delegate_map(const uint64_t nonce, const string addr) {
         return true;
     }
     return false;
+}
+
+bool CWallet::select_delegate_from_set(const uint64_t nonce, const std::string str, std::string& addr) {
+    if (mapDelegate.end() == mapDelegate.find(nonce)) {
+        return false;
+    }
+    std::set<std::string> delegateSet = mapDelegate.at(nonce);
+    //calculate
+    int bestResult = 0;
+    std::set<std::string>::iterator it;
+    for (it = delegateSet.begin(); it != delegateSet.end(); ++it) {
+        int thisResult = numberOfCommonChars(str.c_str(), (*it).c_str());
+        if (fDebug) printf("delegate result : %s %n \n", (*it).c_str(), thisResult);
+        if ( thisResult > bestResult) {
+            bestResult = thisResult;
+            addr = *it;
+        }
+    }
+    return true;
 }
 
 

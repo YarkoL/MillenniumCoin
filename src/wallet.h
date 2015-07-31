@@ -509,9 +509,11 @@ public:
     bool FindStealthTransactions(const CTransaction &tx, mapValue_t &mapNarr);
     int64_t GetAdvertisedBalance() const;
 
-    bool add_to_delegate_map(const uint64_t nonce, const std::string data);
-    bool find_from_delegate_map(const uint64_t nonce, const std::string addr);
+    bool add_to_delegate_set(const uint64_t nonce, const std::string data);
+    bool find_from_delegate_set(const uint64_t nonce, const std::string addr);
     bool init_delegate_set(const uint64_t nonce, int expiry);
+    void erase_delegate_set(const uint64_t nonce);
+    bool select_delegate_from_set(const uint64_t nonce, const std::string str, std::string &addr);
 };
 
 /** A key allocated from the key pool. */

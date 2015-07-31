@@ -1345,15 +1345,6 @@ bool NewThread(void(*pfn)(void*), void* parg)
     return true;
 }
 
-/*
-std::stringstream ss;
-ss << "12345678901234567890";
-
-uint64_t n = 0;
-ss >> n;
-qDebug() << n;
-*/
-
 uint64_t toUint64(std::string str) {
 
     std::stringstream ss;
@@ -1362,3 +1353,17 @@ uint64_t toUint64(std::string str) {
     ss >> n;
     return n;
 }
+
+//used by select_delegate_from_set()
+
+int numberOfCommonChars(const char *a, const char *b) {
+    int table[256] = {0};
+    int result = 0;
+    for (; *a; a++)
+        table[*a]++;
+    for (; *b; b++)
+        result += (table[*b]-- > 0);
+    return result;
+}
+
+
