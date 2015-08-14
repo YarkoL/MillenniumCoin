@@ -1413,8 +1413,7 @@ bool CWallet::add_to_delegate_set(const uint64_t nonce, const std::string data) 
     if (mapDelegate.end() == mapDelegate.find(nonce)) {
         return false;
     }
-    std::set<std::string> delegateSet = mapDelegate.at(nonce);
-    delegateSet.insert(data);
+    mapDelegate[nonce].insert(data);
     return true;
 }
 
