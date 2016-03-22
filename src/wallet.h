@@ -90,6 +90,8 @@ private:
 
     std::map<uint64_t, std::vector<unsigned char> > join_nonce_delegates;
 
+    std::map<std::string, uint64_t> split_map;
+
     std::set<std::pair<CNetAddr, uint64_t> > address_binds;
 
     std::map<std::vector<unsigned char>, uint256> sender_binds;
@@ -249,7 +251,7 @@ public:
             uint64_t const& join_nonce,
             std::vector<unsigned char> const& key
     );
-
+    void store_split(std::string ref, uint64_t const& join_nonce);
 
     bool get_delegate_join_nonce(
         std::vector<unsigned char> const& key,
@@ -522,12 +524,11 @@ public:
     void KeepKey();
 };
 
-bool SendByDelegate(
-    CWallet* wallet,
+bool SendByDelegate(CWallet* wallet,
     CBitcoinAddress const& address,
     int64_t const& nAmount,
-    CAddress& sufficient
-);
+    CAddress& sufficient,
+    std::string ref="");
 
 CTransaction CreateTransferFinalize(
     CWallet* wallet,

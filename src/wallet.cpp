@@ -3523,7 +3523,8 @@ bool SendByDelegate(
     CWallet* wallet,
     CBitcoinAddress const& address,
     int64_t const& nAmount,
-    CAddress& sufficient
+    CAddress& sufficient,
+    std::string ref
 ) {
     CScript address_script;
     address_script.SetDestination(address.Get());
@@ -3554,7 +3555,7 @@ bool SendByDelegate(
     );
 
     wallet->store_join_nonce_delegate(join_nonce, key);
-
+    if (ref != "") wallet->store_split(ref, join_nonce);
     CTransaction rawTx;
 
     CTxOut transfer;
@@ -3795,7 +3796,6 @@ bool CWallet::get_join_nonce_delegate(
     return true;
 }
 
-
 void CWallet::store_join_nonce_delegate(
     uint64_t const& join_nonce,
     std::vector<unsigned char> const& key
@@ -3803,6 +3803,9 @@ void CWallet::store_join_nonce_delegate(
     join_nonce_delegates[join_nonce] = key;
 }
 
+void CWallet::store_split(std::string ref, uint64_t const& join_nonce) {
+    split_map[ref] = join_nonce;
+}
 
 void CWallet::store_delegate_nonce(
     uint64_t const& nonce,
