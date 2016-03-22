@@ -3496,22 +3496,9 @@ void CWallet::ReturnKey(int64_t nIndex)
         printf("keypool return %"PRId64"\n", nIndex);
 }
 
-bool SendByDelegate(
-    CWallet* wallet,
-    CBitcoinAddress const& address,
-    int64_t const& nAmount,
-    CAddress& sufficient
-) {
-
-    CScript address_script;
-
-    address_script.SetDestination(address.Get());
-
+bool FindDelegate(const int64_t &nAmount, CAddress &sufficient) {
     std::map<CAddress, uint64_t> advertised_balances = ListAdvertisedBalances();
-
     bool found = false;
-
-    //find delegate candidate
     for (
         std::map<
             CAddress,
@@ -3526,10 +3513,23 @@ bool SendByDelegate(
             break;
         }
     }
-
     if (!found) {
         return false;
     }
+    return true;
+}
+
+bool SendByDelegate(
+    CWallet* wallet,
+    CBitcoinAddress const& address,
+    int64_t const& nAmount,
+    CAddress& sufficient
+) {
+    CScript address_script;
+    address_script.SetDestination(address.Get());
+
+    //find delegate candidate
+    if (!FindDelegate(nAmount, sufficient)) return false;
 
     CNetAddr const local = GetLocalTorAddress(sufficient);
 

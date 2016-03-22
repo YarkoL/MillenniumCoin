@@ -285,6 +285,8 @@ public:
 
     bool GetBoundNonce(CNetAddr const& address, uint64_t& nonce);
 
+    bool FindDelegate(const int64_t &nAmount, CAddress &sufficient);
+
     // check whether we are allowed to upgrade (or already support) to the named feature
     bool CanSupportFeature(enum WalletFeature wf) { return nWalletMaxVersion >= wf; }
 
