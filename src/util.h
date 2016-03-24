@@ -23,6 +23,7 @@
 #include <boost/filesystem/path.hpp>
 #include <boost/date_time/gregorian/gregorian_types.hpp>
 #include <boost/date_time/posix_time/posix_time_types.hpp>
+#include <boost/random.hpp>
 
 #include <openssl/sha.h>
 #include <openssl/ripemd.h>
@@ -225,6 +226,7 @@ void ShrinkDebugFile();
 int GetRandInt(int nMax);
 uint64_t GetRand(uint64_t nMax);
 uint256 GetRandHash();
+float GetRandFloat(float min, float max);
 int64_t GetTime();
 void SetMockTime(int64_t nMockTimeIn);
 int64_t GetAdjustedTime();

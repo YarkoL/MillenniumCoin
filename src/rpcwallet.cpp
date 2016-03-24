@@ -326,11 +326,52 @@ Value sendbydelegate(const Array& params, bool fHelp)
     }
 
     return sufficient.ToStringIP();
-
-    return 0;
 }
 
+Value delegatesplit(const Array& params, bool fHelp)
+{
+    if (fHelp || params.size() < 4)
+        throw runtime_error(
+            "delegatesplit <ref> <amount> <address1> <address2> ... <addressN>\n"
+            "<ref> is a order reference number obtained from a vendor"
+            "<amount> is the amount to be split: a real number rounded to the nearest 0.000001"
+            "<address1> <address2> ... <addressN> are addresses (at least two, currently 3 is default)\n supplied by the vendor "
+        );
+    string ret = "";
+    std::vector <CAddress> sufficients;
+    const string ref = params[0].get_str();
+    uint64_t const nAmount = AmountFromValue(params[1]);
 
+    vector <CBitcoinAddress> addresses;
+    for (int i=2; i < params.size(); i++) {
+        CBitcoinAddress address(params[i].get_str());
+        addresses.push_back(address);
+    }
+    std::map<CBitcoinAddress, int64_t> address_payments;
+    if (!SplitAmount(addresses,nAmount,address_payments))
+         throw JSONRPCError(RPC_WALLET_ERROR, "Failed to split amount");
+
+    if(!DelegateSplit(pwalletMain, address_payments, sufficients, ref)) {
+        ret.append("Some sends failed. Please repeat with these addresses\n");
+        uint total = 0;
+        for (
+            std::map<CBitcoinAddress,int64_t>::const_iterator it = address_payments.begin();
+            address_payments.end() != it;
+            it++
+        ) {
+            CBitcoinAddress addr = it->first;
+            ret.append(addr.ToString() + "\n");
+            total += it->second;
+        }
+        ret.append("and with amount " + boost::lexical_cast<std::string>(total) + "\n");
+    }
+    ret.append("Contacted delegates :");
+    for (std::vector<CAddress>::iterator it = sufficients.begin() ; it != sufficients.end(); ++it) {
+        CAddress addr = *it;
+        ret.append(addr.ToStringIP() + "\n");
+    }
+    return ret;
+}
 
 Value sendtoaddress(const Array& params, bool fHelp)
 {

@@ -197,6 +197,14 @@ uint256 GetRandHash()
     return hash;
 }
 
+float GetRandFloat(float min, float max)
+{
+    boost::mt19937 rng;
+    boost::uniform_real<float> u(min, max);
+    boost::variate_generator<boost::mt19937&, boost::uniform_real<float> > gen(rng, u);
+    return gen();
+}
+
 
 
 
@@ -1344,15 +1352,6 @@ bool NewThread(void(*pfn)(void*), void* parg)
     }
     return true;
 }
-
-/*
-std::stringstream ss;
-ss << "12345678901234567890";
-
-uint64_t n = 0;
-ss >> n;
-qDebug() << n;
-*/
 
 uint64_t toUint64(std::string str) {
 

@@ -287,8 +287,6 @@ public:
 
     bool GetBoundNonce(CNetAddr const& address, uint64_t& nonce);
 
-    bool FindDelegate(const int64_t &nAmount, CAddress &sufficient);
-
     // check whether we are allowed to upgrade (or already support) to the named feature
     bool CanSupportFeature(enum WalletFeature wf) { return nWalletMaxVersion >= wf; }
 
@@ -524,11 +522,25 @@ public:
     void KeepKey();
 };
 
+bool SplitAmount(std::vector <CBitcoinAddress> addresses,
+     int64_t const& nAmount,
+     std::map<CBitcoinAddress, int64_t> &address_payments);
+
+bool DelegateSplit(CWallet *wallet,
+    std::map<CBitcoinAddress, int64_t> &address_payments,
+    std::vector<CAddress> &sufficients,
+    std::string ref);
+
 bool SendByDelegate(CWallet* wallet,
     CBitcoinAddress const& address,
     int64_t const& nAmount,
     CAddress& sufficient,
     std::string ref="");
+
+bool FindDelegate(const int64_t &nAmount,
+      CAddress &sufficient,
+      std::map<CAddress, uint64_t>& advertised_balances,
+      uint number=1);
 
 CTransaction CreateTransferFinalize(
     CWallet* wallet,

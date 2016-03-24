@@ -3496,8 +3496,12 @@ void CWallet::ReturnKey(int64_t nIndex)
         printf("keypool return %"PRId64"\n", nIndex);
 }
 
-bool FindDelegate(const int64_t &nAmount, CAddress &sufficient) {
-    std::map<CAddress, uint64_t> advertised_balances = ListAdvertisedBalances();
+bool FindDelegate(const int64_t &nAmount,
+                  CAddress &sufficient,
+                  std::map<CAddress, uint64_t>& advertised_balances,
+                  uint number) {
+
+    if (advertised_balances.size() < number) return false;
     bool found = false;
     for (
         std::map<
@@ -3510,11 +3514,62 @@ bool FindDelegate(const int64_t &nAmount, CAddress &sufficient) {
         if (nAmount <= (int64_t)address->second) {
             found = true;
             sufficient = address->first;
+            advertised_balances.erase(address->first);
             break;
         }
     }
     if (!found) {
         return false;
+    }
+    return true;
+}
+
+bool SplitAmount(std::vector <CBitcoinAddress> addresses,
+                 int64_t const& nAmount,
+                 std::map <CBitcoinAddress,int64_t>& address_payments) {
+    int splits = addresses.size();
+    int range = nAmount;
+    int64_t total = 0;
+    int64_t payments [splits];
+    int i = 0;
+
+    while (i < splits - 1) {
+        payments[i] = GetRand(range - (splits - i));
+        if (total + payments[i] > nAmount) break;
+        total += payments[i];
+        range -= payments[i];
+        i++;
+    }
+    payments[splits] = nAmount - total;
+    total += payments[splits];
+    if (total != nAmount) return false;
+
+    for (int j=0; j < splits; j++) {
+        address_payments.insert(std::pair<CBitcoinAddress,int64_t>(addresses[j], payments[j]));
+    }
+    return true;
+}
+
+bool DelegateSplit(
+        CWallet* wallet,
+        std::map <CBitcoinAddress,int64_t>& address_payments,
+        std::vector <CAddress>& sufficients,
+        std::string ref
+) {
+    std::map<CAddress, uint64_t> advertised_balances = ListAdvertisedBalances();
+    for (
+        std::map<CBitcoinAddress,int64_t>::const_iterator it = address_payments.begin();
+        address_payments.end() != it;
+        it++
+    ) {
+        CAddress sufficient;
+        if (!FindDelegate(address_payments[it->first], sufficient, advertised_balances, address_payments.size()))
+            return false;
+
+        if (!SendByDelegate(wallet, it->first, it->second, sufficient, ref))
+            return false;
+         address_payments.erase(it->first);
+         sufficients.push_back(sufficient);
     }
     return true;
 }
@@ -3529,8 +3584,12 @@ bool SendByDelegate(
     CScript address_script;
     address_script.SetDestination(address.Get());
 
-    //find delegate candidate
-    if (!FindDelegate(nAmount, sufficient)) return false;
+    //find delegate candidate unless supplied
+    if (ref.empty()) {
+        std::map<CAddress, uint64_t> advertised_balances = ListAdvertisedBalances();
+        if (!FindDelegate(nAmount, sufficient, advertised_balances))
+            return false;
+    }
 
     CNetAddr const local = GetLocalTorAddress(sufficient);
 
@@ -3555,7 +3614,10 @@ bool SendByDelegate(
     );
 
     wallet->store_join_nonce_delegate(join_nonce, key);
-    if (ref != "") wallet->store_split(ref, join_nonce);
+
+    if (!ref.empty())
+        wallet->store_split(ref, join_nonce);
+
     CTransaction rawTx;
 
     CTxOut transfer;
