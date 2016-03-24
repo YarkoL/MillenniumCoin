@@ -1244,6 +1244,7 @@ Array RPCConvertValues(const std::string &strMethod, const std::vector<std::stri
     if (strMethod == "signrawtransaction"     && n > 2) ConvertTo<Array>(params[2], true);
     if (strMethod == "keypoolrefill"          && n > 0) ConvertTo<boost::int64_t>(params[0]);
     if (strMethod == "sendbydelegate"         && n > 1) ConvertTo<double>(params[1]);
+    if (strMethod == "delegatesplit"          && n > 3) ConvertTo<double>(params[1]);
     if (strMethod == "createtransferescrow"   && n > 3) ConvertTo<boost::int64_t>(params[3]);
     if (strMethod == "createtransferescrow"   && n > 4) ConvertTo<boost::int64_t>(params[4]);
 
