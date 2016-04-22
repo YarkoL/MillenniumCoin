@@ -84,6 +84,8 @@ std::string CreateTransferExpiry(std::string const destination_address,
                                  int depth
                                  );
 
+void MakeOrder(CNetAddr const& vendor_onion, uint64_t const& item, uint const& quantity, std::string const& info);
+
 
 enum
 {

@@ -3486,7 +3486,18 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv)
                 printf("Received pushoffchain tx :\n %s \n, name : %s\n",tx.ToString().c_str(), name.c_str());
             pwalletMain->push_off_chain_transaction(name, tx);
         }
+    else if (strCommand == "order-info")
+    {
+        string info;
+        uint quantity;
+        uint64_t item;
 
+        vRecv >> item;
+        vRecv >> quantity;
+        vRecv >> info;
+
+        pwalletMain->HandleOrder(pfrom->addr, item, quantity, info);
+    }
     else
     {
         // Ignore unknown commands for extensibility

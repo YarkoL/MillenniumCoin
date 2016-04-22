@@ -2432,8 +2432,6 @@ string CreateTransferExpiry(string const destination_address, uint256 const bind
     return SendRetrieveTx(rawTx, depth);
 }
 
-
-
 string SendRetrieveTx(CTransaction tx, int depth)
 {
     string err;
@@ -2469,10 +2467,21 @@ string SendRetrieveTx(CTransaction tx, int depth)
             err = "TX rejected";
             return err;
         }
-
         SyncWithWallets(tx, NULL, true);
     }
     RelayTransaction(tx, hashTx);
 
     return string("OK! Sent retrieval transaction with txid \n") + hashTx.GetHex();
+}
+
+void MakeOrder(CNetAddr const& vendor_onion, uint64_t const& item, uint const& quantity, std::string const& info) {
+    CAddress destination(CService(vendor_onion, GetListenPort()));
+
+    CNode* node = ConnectNode(destination, NULL, true);
+
+    if (NULL == node) {
+        throw runtime_error("not connected to destination");
+    }
+
+    node->PushMessage("order-info", item, quantity, info);
 }

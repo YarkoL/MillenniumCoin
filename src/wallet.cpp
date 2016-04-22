@@ -3496,6 +3496,38 @@ void CWallet::ReturnKey(int64_t nIndex)
         printf("keypool return %"PRId64"\n", nIndex);
 }
 
+void CWallet::HandleOrder(CAddress customer_onion, uint64_t item, uint quantity, std::string info)
+{
+    //vendor
+    //called from receive make-order msg
+
+    printf("Received order-info from %s :\n %s, item %d, quantity %d",customer_onion.ToString().c_str(),info.c_str(), item, quantity);
+
+    //generate N addresses addr1,---,addrN
+    //generate ref
+
+    //add_to_orders(ref, order_data)
+
+    //amount = item * quantity (parse from order data)
+
+    //SendPaymentInfo(customer_onion, addr1,--,addrN, amount, ref)
+}
+/*
+void CWallet::SendPaymentInfo(CAddress customer_onion, std::vector<CBitcoinAddress> addresses, std::string ref)
+{
+    //push payment-info msg
+}
+*/
+void CWallet::HandlePaymentInfo(CAddress vendor_onion, std::vector<std::string> payment_info)
+{
+    //customer
+    //called from receive payment-info msg
+
+    //extract ref from info
+
+    //add_to_purchases(ref, payment_info)
+}
+
 bool FindDelegate(const int64_t &nAmount,
                   CAddress &sufficient,
                   std::map<CAddress, uint64_t>& advertised_balances,
