@@ -308,6 +308,7 @@ static const CRPCCommand vRPCCommands[] =
     { "sendalert",              &sendalert,              false,  false},
     { "sendbydelegate",         &sendbydelegate,         false,  false},
     { "delegatesplit",          &delegatesplit,         false,  false},
+    { "makeorder",              &makeorder,         false,  false},
     { "listadvertisedbalances", &listadvertisedbalances, true,   false},
     { "createtransferexpiry",   &createtransferexpiry,   false,  false},
     { "createtransferescrow",   &createtransferescrow,   false,  false},

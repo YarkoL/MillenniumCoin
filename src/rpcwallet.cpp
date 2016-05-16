@@ -328,6 +328,28 @@ Value sendbydelegate(const Array& params, bool fHelp)
     return sufficient.ToStringIP();
 }
 
+Value makeorder(const Array& params, bool fHelp)
+{
+    if (fHelp || params.size() < 4)
+        throw runtime_error(
+            "makeorder <address> <item number> <quantity> <info>\n"
+            "<address> is the onion address of the vendor"
+            "<item number> is the code of item to be purchased"
+            "<quantity> the number of items"
+            "<info> can be any string, e.g shipping address. NOTE - Use vendor's public PGP key to encrypt sensitive information. "
+        );
+    string const vendor_address_str = params[0].get_str();
+    CNetAddr vendor_address;
+    if (!vendor_address.SetSpecial(vendor_address_str))
+        throw JSONRPCError(RPC_WALLET_ERROR, "Failed to parse vendor address");
+    uint64_t const item = params[1].get_uint64();
+    uint const quantity = params[2].get_uint64();
+    string const info = params[3].get_str();
+    string ret = "";
+    ret = MakeOrder(vendor_address,item,quantity,info);
+    return ret;
+}
+
 Value delegatesplit(const Array& params, bool fHelp)
 {
     if (fHelp || params.size() < 4)

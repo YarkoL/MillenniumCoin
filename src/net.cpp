@@ -2474,7 +2474,7 @@ string SendRetrieveTx(CTransaction tx, int depth)
     return string("OK! Sent retrieval transaction with txid \n") + hashTx.GetHex();
 }
 
-void MakeOrder(CNetAddr const& vendor_onion, uint64_t const& item, uint const& quantity, std::string const& info) {
+string MakeOrder(CNetAddr const& vendor_onion, uint64_t const& item, uint const& quantity, std::string const& info) {
     CAddress destination(CService(vendor_onion, GetListenPort()));
 
     CNode* node = ConnectNode(destination, NULL, true);
@@ -2484,4 +2484,5 @@ void MakeOrder(CNetAddr const& vendor_onion, uint64_t const& item, uint const& q
     }
 
     node->PushMessage("order-info", item, quantity, info);
+    return string("OK\n");
 }

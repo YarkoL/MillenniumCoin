@@ -220,6 +220,7 @@ extern json_spirit::Value getcheckpoint(const json_spirit::Array& params, bool f
 
 extern json_spirit::Value sendbydelegate(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value delegatesplit(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value makeorder(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value listadvertisedbalances(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value createtransferexpiry(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value createtransferescrow(const json_spirit::Array& params, bool fHelp);
