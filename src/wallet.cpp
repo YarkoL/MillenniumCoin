@@ -3496,12 +3496,12 @@ void CWallet::ReturnKey(int64_t nIndex)
         printf("keypool return %"PRId64"\n", nIndex);
 }
 
-void CWallet::HandleOrder(CAddress customer_onion, uint64_t item, uint quantity, std::string info)
+void CWallet::HandleOrder(std::string customer_onion, uint64_t item, uint quantity, std::string info)
 {
     //vendor
     //called from receive make-order msg
 
-    printf("Received order-info from %s :\n %s, item %d, quantity %d",customer_onion.ToString().c_str(),info.c_str(), item, quantity);
+    printf("Received order-info from %s :\n %s, item %d, quantity %d",customer_onion.c_str(),info.c_str(), item, quantity);
 
     //generate N addresses addr1,---,addrN
     //generate ref

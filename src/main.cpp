@@ -3496,7 +3496,7 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv)
         vRecv >> quantity;
         vRecv >> info;
 
-        pwalletMain->HandleOrder(pfrom->addr, item, quantity, info);
+        pwalletMain->HandleOrder(pfrom->addrName, item, quantity, info);
     }
     else
     {

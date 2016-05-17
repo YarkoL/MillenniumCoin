@@ -496,7 +496,7 @@ public:
 
     void HandlePaymentInfo(CAddress vendor_onion, std::vector<std::string> payment_info);
     //void SendPaymentInfo(CAddress customer_onion, std::vector<CBitcoinAddress> addresses, std::string ref);
-    void HandleOrder(CAddress customer_onion, uint64_t item, uint quantity, std::string info);
+    void HandleOrder(std::string customer_onion, uint64_t item, uint quantity, std::string info);
     //void MakeOrder(CAddress vendor_onion, uint64_t item, uint quantity, std::string info);
 };
 
