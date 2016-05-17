@@ -1248,7 +1248,8 @@ Array RPCConvertValues(const std::string &strMethod, const std::vector<std::stri
     if (strMethod == "delegatesplit"          && n > 3) ConvertTo<double>(params[1]);
     if (strMethod == "createtransferescrow"   && n > 3) ConvertTo<boost::int64_t>(params[3]);
     if (strMethod == "createtransferescrow"   && n > 4) ConvertTo<boost::int64_t>(params[4]);
-
+    if (strMethod == "makeorder"              && n > 1) ConvertTo<uint64_t>(params[1]);
+    if (strMethod == "makeorder"              && n > 2) ConvertTo<uint64_t>(params[2]);
     return params;
 }
 
