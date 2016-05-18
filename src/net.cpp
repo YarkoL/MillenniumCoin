@@ -2476,13 +2476,13 @@ string SendRetrieveTx(CTransaction tx, int depth)
 
 string MakeOrder(CNetAddr const& vendor_onion, uint64_t const& item, uint const& quantity, std::string const& info) {
     CAddress destination(CService(vendor_onion, GetListenPort()));
-
+    CNetAddr addrMe = GetLocalTorAddress(vendor_onion);
     CNode* node = ConnectNode(destination, NULL, true);
 
     if (NULL == node) {
         throw runtime_error("not connected to destination");
     }
 
-    node->PushMessage("order-info", item, quantity, info);
+    node->PushMessage("order-info", addrMe.ToString(), item, quantity, info);
     return string("OK\n");
 }

@@ -3488,15 +3488,17 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv)
         }
     else if (strCommand == "order-info")
     {
+        string customer_onion;
         string info;
         uint quantity;
         uint64_t item;
 
+        vRecv >> customer_onion;
         vRecv >> item;
         vRecv >> quantity;
         vRecv >> info;
 
-        pwalletMain->HandleOrder(pfrom->addrName, item, quantity, info);
+        pwalletMain->HandleOrder(customer_onion, item, quantity, info);
     }
     else
     {
