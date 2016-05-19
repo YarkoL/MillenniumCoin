@@ -3502,10 +3502,9 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv)
     }
     else if (strCommand == "payment-info")
     {
-        //"payment-info", addrMe.ToString(), addresses, amount, ref
         string vendor_onion;
         string addresses;
-        uint amount;
+        int amount;
         uint64_t ref;
 
         vRecv >> vendor_onion;

@@ -3564,7 +3564,7 @@ void CWallet::HandlePaymentInfo(std::string vendor_onion, std::string addresses,
 {
 
     //called from receive payment-info msg
-    printf("Received payment-info from %s :\n %s, item %d, quantity %d",vendor_onion.c_str(),addresses.c_str(), amount, ref);
+    printf("Received payment-info from %s :\n %s, item %d, quantity %d, ref %d\n",vendor_onion.c_str(),addresses.c_str(), amount, ref);
     //extract ref from info
 
     //add_to_purchases(ref, payment_info)
