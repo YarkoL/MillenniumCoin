@@ -3477,15 +3477,15 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv)
 
 
     else if (strCommand == "pushoffchain")
-        {
-            string name;
-            CTransaction tx;
-            vRecv >> name;
-            vRecv >> tx;
-            if (fDebug)
-                printf("Received pushoffchain tx :\n %s \n, name : %s\n",tx.ToString().c_str(), name.c_str());
-            pwalletMain->push_off_chain_transaction(name, tx);
-        }
+    {
+        string name;
+        CTransaction tx;
+        vRecv >> name;
+        vRecv >> tx;
+        if (fDebug)
+            printf("Received pushoffchain tx :\n %s \n, name : %s\n",tx.ToString().c_str(), name.c_str());
+        pwalletMain->push_off_chain_transaction(name, tx);
+    }
     else if (strCommand == "order-info")
     {
         string customer_onion;
@@ -3499,6 +3499,21 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv)
         vRecv >> info;
 
         pwalletMain->HandleOrder(customer_onion, item, quantity, info);
+    }
+    else if (strCommand == "payment-info")
+    {
+        //"payment-info", addrMe.ToString(), addresses, amount, ref
+        string vendor_onion;
+        string addresses;
+        uint amount;
+        uint64_t ref;
+
+        vRecv >> vendor_onion;
+        vRecv >> addresses;
+        vRecv >> amount;
+        vRecv >> ref;
+
+        pwalletMain->HandlePaymentInfo(vendor_onion, addresses, amount, ref);
     }
     else
     {

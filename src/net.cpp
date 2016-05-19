@@ -2486,3 +2486,21 @@ string MakeOrder(CNetAddr const& vendor_onion, uint64_t const& item, uint const&
     node->PushMessage("order-info", addrMe.ToString(), item, quantity, info);
     return string("OK\n");
 }
+
+string SendPaymentInfo(string customer_address_string, string addresses, int amount, uint64_t ref)
+{
+    //push payment-info msg
+    CNetAddr customer_onion;
+    if (!customer_onion.SetSpecial(customer_address_string))
+        throw runtime_error("Failed to parse customer address");
+    CAddress destination(CService(customer_onion, GetListenPort()));
+    CNetAddr addrMe = GetLocalTorAddress(customer_onion);
+    CNode* node = ConnectNode(destination, NULL, true);
+
+    if (NULL == node) {
+        throw runtime_error("not connected to destination");
+    }
+
+    node->PushMessage("payment-info", addrMe.ToString(), addresses, amount, ref);
+    return string("OK\n");
+}

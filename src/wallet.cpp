@@ -3496,33 +3496,75 @@ void CWallet::ReturnKey(int64_t nIndex)
         printf("keypool return %"PRId64"\n", nIndex);
 }
 
+//***SHOP FUNCTIONS*** TODO they dont belong to wallet class, refactor to a separate file
+
+bool CWallet::GenerateSplitAddresses(uint splits,std::vector<CBitcoinAddress>& addresses ) {
+    //generate N addresses addr1,---,addrN
+    bool keypool_ran_out = false;
+    for (int i=0; i < splits; i++) {
+        if (!IsLocked()) TopUpKeyPool();
+
+        CPubKey newKey;
+        if (!GetKeyFromPool(newKey, false)) {
+            keypool_ran_out = true;
+            break;
+        }
+        CKeyID keyID = newKey.GetID();
+        //store addresses
+        addresses.push_back(CBitcoinAddress(keyID));
+    }
+    if (keypool_ran_out) return false;
+    return true;
+}
+
 void CWallet::HandleOrder(std::string customer_onion, uint64_t item, uint quantity, std::string info)
 {
-    //vendor
     //called from receive make-order msg
+    if (fDebug) printf("Received order-info from %s :\n %s, item %d, quantity %d",customer_onion.c_str(),info.c_str(), item, quantity);
 
-    printf("Received order-info from %s :\n %s, item %d, quantity %d",customer_onion.c_str(),info.c_str(), item, quantity);
+    uint splits = 3; //TODO make this a default value of an user-adjustable parameter
+    uint64_t ref = 0;
+    std::string addresses_string = "";
+    std::vector<CBitcoinAddress> addresses;
+    std::vector<std::string> order;
 
-    //generate N addresses addr1,---,addrN
-    //generate ref
-
-    //add_to_orders(ref, order_data)
-
-    //amount = item * quantity (parse from order data)
-
-    //SendPaymentInfo(customer_onion, addr1,--,addrN, amount, ref)
+    int amount = GetItemPrice(item); //will be <0 if item does not exist
+    if (amount >= 0) {
+        if (GenerateSplitAddresses(splits, addresses)) {
+            for (int i=0; i < addresses.size(); i++) {
+                //TODO validate addresses?
+                std::string addr = addresses.at(i).ToString();
+                //store address
+                order.push_back(addr);
+                //We pack the addresses that are to be sent to customer into a space-delimited string , since
+                //we do not want to impose limit on the number of splits, and want to include them into a
+                //push message as one
+                addresses_string.append(addr);
+                if (i < addresses.size()-1) addresses_string.append(" ");
+            }
+            //store rest of order data
+            order.push_back(boost::lexical_cast<std::string>(item));
+            order.push_back(boost::lexical_cast<std::string>(quantity));
+            //generate order reference
+            ref = GetRand(std::numeric_limits<uint64_t>::max());
+            order.push_back(boost::lexical_cast<std::string>(ref));
+            //add_to_orders
+            orders[ref] = order;
+        }
+    }
+    SendPaymentInfo(customer_onion,addresses_string,amount,ref);
 }
-/*
-void CWallet::SendPaymentInfo(CAddress customer_onion, std::vector<CBitcoinAddress> addresses, std::string ref)
-{
-    //push payment-info msg
+
+int CWallet::GetItemPrice(uint64_t item) {
+    //TODO search items map
+    return 0;
 }
-*/
-void CWallet::HandlePaymentInfo(CAddress vendor_onion, std::vector<std::string> payment_info)
+
+void CWallet::HandlePaymentInfo(std::string vendor_onion, std::string addresses, uint amount, uint64_t ref)
 {
-    //customer
+
     //called from receive payment-info msg
-
+    printf("Received payment-info from %s :\n %s, item %d, quantity %d",vendor_onion.c_str(),addresses.c_str(), amount, ref);
     //extract ref from info
 
     //add_to_purchases(ref, payment_info)

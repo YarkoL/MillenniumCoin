@@ -91,6 +91,7 @@ private:
     std::map<uint64_t, std::vector<unsigned char> > join_nonce_delegates;
 
     std::map<std::string, uint64_t> split_map;
+    std::map<uint64_t,std::vector<std::string> > orders;
 
     std::set<std::pair<CNetAddr, uint64_t> > address_binds;
 
@@ -112,8 +113,11 @@ private:
             >
         > delegate_attempts;
 
-    //std::vector<std::string> retrieval_strings;
 
+    //***SHOP FUNCTIONS*** TODO they dont belong to wallet class, refactor to a separate file
+
+    int GetItemPrice(uint64_t item);
+    bool GenerateSplitAddresses(uint splits, std::vector<CBitcoinAddress> &addresses);
 public:
     mutable CCriticalSection cs_wallet;
 
@@ -282,8 +286,8 @@ public:
         std::vector<unsigned char>& key
     );
 
-    bool GetDelegateBindKey(CKeyID& key, CTransaction const& tx);
-    bool GetSenderBindKey(CKeyID& key, CTransaction const& tx);
+    //bool GetDelegateBindKey(CKeyID& key, CTransaction const& tx);
+    //bool GetSenderBindKey(CKeyID& key, CTransaction const& tx);
 
     bool GetBoundNonce(CNetAddr const& address, uint64_t& nonce);
 
@@ -494,10 +498,9 @@ public:
      */
     boost::signals2::signal<void (CWallet *wallet, const uint256 &hashTx, ChangeType status)> NotifyTransactionChanged;
 
-    void HandlePaymentInfo(CAddress vendor_onion, std::vector<std::string> payment_info);
-    //void SendPaymentInfo(CAddress customer_onion, std::vector<CBitcoinAddress> addresses, std::string ref);
+    void HandlePaymentInfo(std::string vendor_onion, std::string addresses, uint amount, uint64_t ref);
+
     void HandleOrder(std::string customer_onion, uint64_t item, uint quantity, std::string info);
-    //void MakeOrder(CAddress vendor_onion, uint64_t item, uint quantity, std::string info);
 };
 
 /** A key allocated from the key pool. */
