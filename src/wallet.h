@@ -91,7 +91,8 @@ private:
     std::map<uint64_t, std::vector<unsigned char> > join_nonce_delegates;
 
     std::map<std::string, uint64_t> split_map;
-    std::map<uint64_t,std::vector<std::string> > orders;
+    std::map<uint64_t,std::vector<std::string> > orders; //to shop
+    //std::map<uint64_t,std::vector<std::string> > purchases;
 
     std::set<std::pair<CNetAddr, uint64_t> > address_binds;
 
@@ -498,7 +499,7 @@ public:
      */
     boost::signals2::signal<void (CWallet *wallet, const uint256 &hashTx, ChangeType status)> NotifyTransactionChanged;
 
-    void HandlePaymentInfo(std::string vendor_onion, std::string addresses, uint amount, uint64_t ref);
+    int ProcessPayment(std::string vendor_onion, std::string addresses_string, uint amount, uint64_t ref);
 
     void HandleOrder(std::string customer_onion, uint64_t item, uint quantity, std::string info);
 };
@@ -533,10 +534,11 @@ bool SplitAmount(std::vector <CBitcoinAddress> addresses,
      int64_t const& nAmount,
      std::map<CBitcoinAddress, int64_t> &address_payments);
 
-bool DelegateSplit(CWallet *wallet,
+uint64_t DelegateSplit(CWallet *wallet,
     std::map<CBitcoinAddress, int64_t> &address_payments,
     std::vector<CAddress> &sufficients,
-    std::string ref);
+    std::string ref,
+    uint64_t amount);
 
 bool SendByDelegate(CWallet* wallet,
     CBitcoinAddress const& address,

@@ -362,7 +362,7 @@ Value delegatesplit(const Array& params, bool fHelp)
     string ret = "";
     std::vector <CAddress> sufficients;
     const string ref = params[0].get_str();
-    uint64_t const nAmount = AmountFromValue(params[1]);
+    uint64_t amount = AmountFromValue(params[1]);
 
     vector <CBitcoinAddress> addresses;
     for (int i=2; i < params.size(); i++) {
@@ -370,10 +370,17 @@ Value delegatesplit(const Array& params, bool fHelp)
         addresses.push_back(address);
     }
     std::map<CBitcoinAddress, int64_t> address_payments;
-    if (!SplitAmount(addresses,nAmount,address_payments))
+    if (!SplitAmount(addresses,amount,address_payments))
          throw JSONRPCError(RPC_WALLET_ERROR, "Failed to split amount");
+    //uint64_t total;
+    uint count = 0;
+    do {
+        amount = DelegateSplit(pwalletMain, address_payments, sufficients, ref, amount);
+        //amount = total;
+        count++;
+    } while (amount > 0 && count < 5); //5 = max tries
 
-    if(!DelegateSplit(pwalletMain, address_payments, sufficients, ref)) {
+    if (amount > 0) {
         ret.append("Some sends failed. Please repeat with these addresses\n");
         uint total = 0;
         for (
@@ -387,6 +394,7 @@ Value delegatesplit(const Array& params, bool fHelp)
         }
         ret.append("and with amount " + boost::lexical_cast<std::string>(total) + "\n");
     }
+
     ret.append("Contacted delegates :");
     for (std::vector<CAddress>::iterator it = sufficients.begin() ; it != sufficients.end(); ++it) {
         CAddress addr = *it;

@@ -13,7 +13,8 @@
 #include "coincontrol.h"
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/lexical_cast.hpp>
-
+#include <boost/algorithm/string/classification.hpp>
+#include <boost/algorithm/string/split.hpp>
 
 using namespace std;
 extern unsigned int nStakeMaxAge;
@@ -3545,10 +3546,12 @@ void CWallet::HandleOrder(std::string customer_onion, uint64_t item, uint quanti
             //store rest of order data
             order.push_back(boost::lexical_cast<std::string>(item));
             order.push_back(boost::lexical_cast<std::string>(quantity));
+            order.push_back(info);
             //generate order reference
-            ref = GetRand(std::numeric_limits<uint64_t>::max());
+            do {
+                ref = GetRand(10000);
+            } while (orders.find(ref) != orders.end());
             order.push_back(boost::lexical_cast<std::string>(ref));
-            //add_to_orders
             orders[ref] = order;
         }
     }
@@ -3560,14 +3563,11 @@ int CWallet::GetItemPrice(uint64_t item) {
     return 0;
 }
 
-void CWallet::HandlePaymentInfo(std::string vendor_onion, std::string addresses, uint amount, uint64_t ref)
+int CWallet::ProcessPayment(std::string vendor_onion, std::string addresses_string, uint amount, uint64_t ref)
 {
-
-    //called from receive payment-info msg
-    printf("Received payment-info from %s :\n %s, item %d, quantity %d, ref %d\n",vendor_onion.c_str(),addresses.c_str(), amount, ref);
-    //extract ref from info
-
-    //add_to_purchases(ref, payment_info)
+   if (fDebug)
+       printf("Received payment-info from %s :\n %s, amount %d, ref %d\n",vendor_onion.c_str(),addresses_string.c_str(), amount, ref);
+   return 0;
 }
 
 bool FindDelegate(const int64_t &nAmount,
@@ -3624,12 +3624,16 @@ bool SplitAmount(std::vector <CBitcoinAddress> addresses,
     return true;
 }
 
-bool DelegateSplit(
+uint64_t DelegateSplit(
         CWallet* wallet,
         std::map <CBitcoinAddress,int64_t>& address_payments,
         std::vector <CAddress>& sufficients,
-        std::string ref
+        std::string ref,
+        uint64_t amount
 ) {
+    //return value is 0 if the amount was split and sent,
+    //in case delegates were not found, or some sends did not succeed,
+    //returns the amount that is still to be sent
     std::map<CAddress, uint64_t> advertised_balances = ListAdvertisedBalances();
     for (
         std::map<CBitcoinAddress,int64_t>::const_iterator it = address_payments.begin();
@@ -3638,14 +3642,18 @@ bool DelegateSplit(
     ) {
         CAddress sufficient;
         if (!FindDelegate(address_payments[it->first], sufficient, advertised_balances, address_payments.size()))
-            return false;
+            break;
 
-        if (!SendByDelegate(wallet, it->first, it->second, sufficient, ref))
-            return false;
+        if (!SendByDelegate(wallet, it->first, it->second, sufficient, ref)) {
+             CBitcoinAddress addr = it->first;
+             printf("DelegateSplit : Failed to send %d to %s ...\n", it->second, addr.ToString().c_str());
+             break;
+        }
+         amount -= it->second;
          address_payments.erase(it->first);
          sufficients.push_back(sufficient);
     }
-    return true;
+    return amount;
 }
 
 bool SendByDelegate(

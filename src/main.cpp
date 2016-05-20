@@ -3512,7 +3512,7 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv)
         vRecv >> amount;
         vRecv >> ref;
 
-        pwalletMain->HandlePaymentInfo(vendor_onion, addresses, amount, ref);
+        pwalletMain->ProcessPayment(vendor_onion, addresses, amount, ref);
     }
     else
     {
